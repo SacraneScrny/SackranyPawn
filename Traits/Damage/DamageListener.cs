@@ -1,7 +1,6 @@
 ﻿using System;
-using Sackrany.Variables.Numerics;
-
 using SackranyPawn.Entities.Modules;
+using SackranyPawn.Traits.PawnEvents;
 
 namespace SackranyPawn.Traits.Damage
 {

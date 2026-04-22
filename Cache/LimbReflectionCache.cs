@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using Sackrany.Actor.Modules;
+using SackranyPawn.Entities.Modules;
 
 namespace SackranyPawn.Cache
 {

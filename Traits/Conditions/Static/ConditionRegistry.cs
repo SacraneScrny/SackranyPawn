@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Sackrany.Utils.CacheRegistry;
+using SackranyPawn.Cache;
 
 namespace SackranyPawn.Traits.Conditions.Static
 {

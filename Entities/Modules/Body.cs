@@ -5,6 +5,8 @@ using Sackrany.Utils.Tracer;
 
 using SackranyPawn.Cache;
 using SackranyPawn.Entities.Modules.ModuleComposition;
+using SackranyPawn.Traits.Conditions;
+using SackranyPawn.Traits.Stats;
 
 using UnityEngine;
 
@@ -38,7 +40,7 @@ namespace SackranyPawn.Entities.Modules
         {
             if (Add(limb))
             {
-                result = Get(limb);
+                result = Get(limb.GetType());
                 return true;
             }
             result = null;
@@ -67,9 +69,9 @@ namespace SackranyPawn.Entities.Modules
             if (!IsDynamic && _limbs.Count > 0) return false;
 
             bool allAdded = true;
-            limbs = limbs.OrderBy(x => LimbReflectionCache.GetMetadata(x.GetModuleType()).UpdateOrder).ToArray();
+            limbs = limbs.OrderBy(x => LimbReflectionCache.GetMetadata(x.GetType()).UpdateOrder).ToArray();
 
-            var tempModules = new List<(Limb module, int id)>(limbs.Length);
+            var tempLimbs = new List<(Limb limb, int id)>(limbs.Length);
             for (int i = 0; i < limbs.Length; i++)
             {
                 if (!CreateAndRegister(limbs[i], out var instance))
@@ -77,27 +79,27 @@ namespace SackranyPawn.Entities.Modules
                     allAdded = false;
                     continue;
                 }
-                tempModules.Add((instance, LimbRegistry.GetId(limb.GetType())));
+                tempLimbs.Add((instance, LimbRegistry.GetId(limbs[i].GetType())));
             }
 
             bool dependenciesSolved = false;
-            while (!dependenciesSolved && _limbs.Count > 0 && tempModules.Count > 0)
+            while (!dependenciesSolved && _limbs.Count > 0 && tempLimbs.Count > 0)
             {
                 dependenciesSolved = true;
-                for (int i = tempModules.Count - 1; i >= 0; i--)
+                for (int i = tempLimbs.Count - 1; i >= 0; i--)
                 {
-                    if (DependencyCheck(tempModules[i].module)) continue;
+                    if (DependencyCheck(tempLimbs[i].limb)) continue;
                     dependenciesSolved = false;
-                    RemoveInternal(tempModules[i].id);
-                    tempModules.RemoveAt(i);
+                    RemoveInternal(tempLimbs[i].id);
+                    tempLimbs.RemoveAt(i);
                     allAdded = false;
                 }
             }
 
-            for (int i = 0; i < tempModules.Count; i++)
-                tempModules[i].module.Awake();
-            for (int i = 0; i < tempModules.Count; i++)
-                ActivateModule(tempModules[i].module);
+            for (int i = 0; i < tempLimbs.Count; i++)
+                tempLimbs[i].limb.Awake();
+            for (int i = 0; i < tempLimbs.Count; i++)
+                ActivateModule(tempLimbs[i].limb);
 
             return allAdded;
         }

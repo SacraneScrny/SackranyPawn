@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Sackrany.Actor.UnitMono;
+using SackranyPawn.Components;
 
 namespace SackranyPawn.Cache
 {
@@ -12,27 +12,27 @@ namespace SackranyPawn.Cache
         static readonly Dictionary<Type, FieldInfo> _controllerFields = new();
         static readonly Dictionary<Type, FieldInfo> _defaultFields = new();
 
-        public static uint GetHash(Unit unit)
+        public static uint GetHash(Pawn pawn)
         {
-            var controller = GetController(unit);
+            var controller = GetBody(pawn);
             if (controller == null) return 0u;
             return HashBuilder.BuildFromTemplates(CollectTemplates(controller));
         }
-        static object GetController(Unit unit)
+        static object GetBody(Pawn pawn)
         {
-            var unitType = unit.GetType();
+            var unitType = pawn.GetType();
             if (!_controllerFields.TryGetValue(unitType, out var fi))
             {
-                fi = unitType.GetField("Controller",
+                fi = unitType.GetField("Body",
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 _controllerFields[unitType] = fi;
             }
-            return fi?.GetValue(unit);
+            return fi?.GetValue(pawn);
         }
-        static List<object> CollectTemplates(object controller)
+        static List<object> CollectTemplates(object body)
         {
             var list = new List<object>(16);
-            var controllerType = controller.GetType();
+            var controllerType = body.GetType();
 
             if (!_defaultFields.TryGetValue(controllerType, out var fi))
             {
@@ -41,7 +41,7 @@ namespace SackranyPawn.Cache
                 _defaultFields[controllerType] = fi;
             }
 
-            if (fi?.GetValue(controller) is IEnumerable templates)
+            if (fi?.GetValue(body) is IEnumerable templates)
                 foreach (var t in templates)
                     if (t != null) list.Add(t);
 

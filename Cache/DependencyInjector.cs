@@ -1,6 +1,6 @@
 ﻿using System;
 
-using Sackrany.Actor.Modules;
+using SackranyPawn.Entities.Modules;
 
 using UnityEngine;
 
@@ -8,11 +8,11 @@ namespace SackranyPawn.Cache
 {
     public static class DependencyInjector
     {
-        public static bool Inject(object target, ModulesController modules)
+        public static bool Inject(object target, Body body)
         {
-            return InjectDependencies(target, modules);
+            return InjectDependencies(target, body);
         }
-        public static bool InjectDependencies(object target, ModulesController modules)
+        public static bool InjectDependencies(object target, Body modules)
         {
             var meta = LimbReflectionCache.GetMetadata(target.GetType());
 
@@ -44,9 +44,9 @@ namespace SackranyPawn.Cache
 
             return true;
         }
-        public static bool TryResolve(Type type, ModulesController modules, out object result)
+        public static bool TryResolve(Type type, Body body, out object result)
         {
-            if (modules.TryGet(type, out var module, tryAssignable: true))
+            if (body.TryGet(type, out var module, tryAssignable: true))
             {
                 result = module;
                 return true;
@@ -54,7 +54,7 @@ namespace SackranyPawn.Cache
 
             if (typeof(Component).IsAssignableFrom(type))
             {
-                var unit = modules.Unit;
+                var unit = body.Pawn;
                 var comp = unit.GetComponent(type);
                 if (comp == null)
                     comp = unit.GetComponentInChildren(type, true);

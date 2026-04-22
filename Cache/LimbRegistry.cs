@@ -1,6 +1,4 @@
 ﻿using System;
-using Sackrany.Utils.CacheRegistry;
-
 using SackranyPawn.Entities.Modules;
 
 namespace SackranyPawn.Cache
