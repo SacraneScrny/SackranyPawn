@@ -1,6 +1,6 @@
 ﻿using System;
 
-using Sackrany.Utils.CacheRegistry;
+using SackranyPawn.Cache;
 
 namespace SackranyPawn.Traits.Tags
 {

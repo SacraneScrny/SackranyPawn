@@ -16,11 +16,11 @@ namespace SackranyPawn.Managers
         public static float CellSize { get; private set; } = 10f;
 
         static readonly Dictionary<CellKey, List<Pawn>> _cells = new();
-        static readonly Dictionary<uint, CellKey> _pawnCell = new();
-        static readonly Dictionary<uint, Pawn> _pawns = new();
+        static readonly Dictionary<int, CellKey> _pawnCell = new();
+        static readonly Dictionary<int, Pawn> _pawns = new();
         
         static readonly List<Pawn> _pawnList = new();
-        static readonly Dictionary<uint, int> _pawnListIndex = new();
+        static readonly Dictionary<int, int> _pawnListIndex = new();
 
         static float _invCellSize;
 
@@ -42,9 +42,6 @@ namespace SackranyPawn.Managers
             PawnRegister.OnPawnRegistered += RegisterInternal;
             PawnRegister.OnPawnUnregistered += UnregisterInternal;
             
-            PawnRegister.OnPawnRegistered -= RegisterInternal;
-            PawnRegister.OnPawnUnregistered -= UnregisterInternal;  
-            
             var loop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoopUtils.Remove<PawnSpatialUpdateSystem>(ref loop);
 
@@ -53,6 +50,8 @@ namespace SackranyPawn.Managers
                 type = typeof(PawnSpatialUpdateSystem),
                 updateDelegate = Tick
             });
+
+            PlayerLoop.SetPlayerLoop(loop);
         }
 
         static void RegisterInternal(Pawn pawn)

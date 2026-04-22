@@ -16,6 +16,7 @@ namespace SackranyPawn.Cache
         {
             lock (_lock)
             {
+                if (type is not TBase) return -1;
                 if (_typeToId.TryGetValue(type, out var id))
                     return id;
 

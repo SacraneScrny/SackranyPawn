@@ -1,8 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-using Sackrany.Actor.Traits.Affinity;
-using Sackrany.Actor.UnitMono;
-using Sackrany.Variables.Numerics;
+using SackranyPawn.Components;
 
 using UnityEngine;
 
@@ -16,10 +14,9 @@ namespace SackranyPawn.Traits.Damage
         Vector3 Direction { get; }
         Vector3 HitPosition { get; }
         Vector3 AttackPosition { get; }
-        IAffinity Affinity { get; }
         
-        Unit Attacker { get; }
-        Unit Target { get; }
+        Pawn Attacker { get; }
+        Pawn Target { get; }
         GameObject GameObject { get; }
 
         bool HitSomebody();
@@ -32,10 +29,9 @@ namespace SackranyPawn.Traits.Damage
         public Vector3 Direction { get; }
         public Vector3 HitPosition { get; }
         public Vector3 AttackPosition { get; }
-        public IAffinity Affinity { get; }
 
-        public Unit Attacker { get; }
-        public Unit Target { get; }
+        public Pawn Attacker { get; }
+        public Pawn Target { get; }
         public GameObject GameObject { get; }
         
         public bool HitSomebody() => Target != null;
@@ -47,9 +43,8 @@ namespace SackranyPawn.Traits.Damage
             Vector3? hitPosition,
             Vector3? attackPosition,
             [CanBeNull] GameObject gameObject,
-            [CanBeNull] Unit attacker,
-            [CanBeNull] Unit target,
-            [CanBeNull] IAffinity affinity)
+            [CanBeNull] Pawn attacker,
+            [CanBeNull] Pawn target)
         {
             this.GameObject = gameObject ?? target?.gameObject ?? attacker?.gameObject;
             Damage = damage;
@@ -70,7 +65,6 @@ namespace SackranyPawn.Traits.Damage
             else AttackPosition = Vector3.zero;
 
             Direction = HitPosition - AttackPosition;
-            Affinity = affinity ?? Affinity<Default>.Instance;
         }
     }
 

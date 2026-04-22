@@ -36,7 +36,7 @@ namespace SackranyPawn.Components
         public Modifiable<float> TimeFlow { get; private set; }
         public bool IsWorking { get; private set; }
         public bool IsActive => IsWorking && gameObject.activeSelf && gameObject.activeInHierarchy;
-        public uint Hash { get; private set; }
+        public int Hash { get; private set; }
         
         bool _isInitialized;
         bool _isQuitting;
@@ -59,13 +59,12 @@ namespace SackranyPawn.Components
             if (_isInitialized) return;
             Application.quitting += OnApplicationQuitting;
             
-            Hash = SimpleId.Next();
+            Hash = PawnHash.GetId();
             
             Tag ??= new ();
             Tag.Initialize(this);
             
             Event ??= new ();
-            Event = new ();
             
             _archetype = new (this);
             TimeFlow = new (1);
@@ -208,7 +207,7 @@ namespace SackranyPawn.Components
         }
         public override int GetHashCode()
         {
-            return unchecked((int)Hash);
+            return Hash;
         }
 
         public static bool operator ==(Pawn left, Pawn right)

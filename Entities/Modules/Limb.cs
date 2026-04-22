@@ -5,9 +5,6 @@ namespace SackranyPawn.Entities.Modules
 {
     public abstract class Limb : PawnBase, IDisposable
     {
-        CancellationTokenSource _lifecycleCts;
-        public virtual CancellationToken ModuleToken => CancellationToken.None;
-        
         public bool IsAwaken { get; private set; }
         public bool IsStarted { get; private set; }
         public bool IsDisposed { get; private set; }
@@ -22,7 +19,9 @@ namespace SackranyPawn.Entities.Modules
         }
         public void Start()
         {
+            if (!IsAwaken) return;
             if (IsStarted) return;
+            if (IsDisposed) return;
             OnStartInternal();
             IsStarted = true;
             OnStart();
@@ -83,7 +82,7 @@ namespace SackranyPawn.Entities.Modules
     public class AsyncLimb : Limb
     {
         CancellationTokenSource _lifecycleCts;
-        public sealed override CancellationToken ModuleToken => _lifecycleCts?.Token ?? CancellationToken.None;
+        public virtual CancellationToken ModuleToken => CancellationToken.None;
 
         private protected sealed override void OnAwakeInternal()
             => _lifecycleCts = new CancellationTokenSource();

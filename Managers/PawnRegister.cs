@@ -13,14 +13,14 @@ namespace SackranyPawn.Managers
 {
     public static class PawnRegister
     {
-        static readonly Dictionary<TeamInfo, Dictionary<uint, Pawn>> _cachedTeams = new();
-        static readonly Dictionary<uint, Pawn> _cachedPawns = new();
-        static readonly Dictionary<PawnArchetype, Dictionary<uint, Pawn>> _cachedArchetypes = new();
-        static readonly Dictionary<int, Dictionary<uint, Pawn>> _cachedTags = new();
+        static readonly Dictionary<TeamInfo, Dictionary<int, Pawn>> _cachedTeams = new();
+        static readonly Dictionary<int, Pawn> _cachedPawns = new();
+        static readonly Dictionary<PawnArchetype, Dictionary<int, Pawn>> _cachedArchetypes = new();
+        static readonly Dictionary<int, Dictionary<int, Pawn>> _cachedTags = new();
         static readonly List<Pawn> _cachedArray = new();
         
-        static readonly Dictionary<uint, int> _hashToIndex = new();
-        static readonly Dictionary<uint, PawnHandlers> _handlers = new();
+        static readonly Dictionary<int, int> _hashToIndex = new();
+        static readonly Dictionary<int, PawnHandlers> _handlers = new();
         readonly struct PawnHandlers
         {
             public readonly Action<int> OnTagAdded;

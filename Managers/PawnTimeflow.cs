@@ -21,12 +21,13 @@ namespace SackranyPawn.Managers
             _lastCurrentTimeFlow = TimeFlow;            
             var loop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoopUtils.Remove<PawnTimeFlowUpdateSystem>(ref loop);
-
             PlayerLoopUtils.InsertAfter<Update.ScriptRunBehaviourUpdate>(ref loop, new PlayerLoopSystem
             {
                 type = typeof(PawnTimeFlowUpdateSystem),
                 updateDelegate = Tick
             });
+
+            PlayerLoop.SetPlayerLoop(loop);
         }
         
         static void Tick()

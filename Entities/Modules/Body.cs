@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sackrany.Utils.Tracer;
 
 using SackranyPawn.Cache;
 using SackranyPawn.Entities.Modules.ModuleComposition;
@@ -13,7 +12,6 @@ using UnityEngine;
 namespace SackranyPawn.Entities.Modules
 {
     [Serializable]
-    [TraceAll]
     public sealed class Body : PawnBase, IDisposable
     {
         public BodyMode Mode = BodyMode.Dynamic;
@@ -51,7 +49,7 @@ namespace SackranyPawn.Entities.Modules
             if (!IsDynamic) return false;
 
             if (!CreateAndRegister(limb, out var instance))
-                return true;
+                return false;
 
             if (!DependencyCheck(instance))
             {
