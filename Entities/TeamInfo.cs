@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using SackranyPawn.Traits.Tags;
+using SackranyPawn.Traits.PawnTags;
 
 namespace SackranyPawn.Entities
 {
@@ -23,7 +23,7 @@ namespace SackranyPawn.Entities
                 hash ^= id * 1000003;
             TeamId = hash;
         }
-        public TeamInfo(IEnumerable<ITag> tags, bool hasTeam = true)
+        public TeamInfo(IEnumerable<IPawnTag> tags, bool hasTeam = true)
         {
             None = !hasTeam;
             if (None) {

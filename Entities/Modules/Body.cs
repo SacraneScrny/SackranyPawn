@@ -34,7 +34,7 @@ namespace SackranyPawn.Entities.Modules
         #region MODULES
         readonly Dictionary<int, Limb> _limbs = new Dictionary<int, Limb>();
 
-        public bool Add(Limb limb, out Limb result)
+        public bool TryAdd(Limb limb, out Limb result)
         {
             if (Add(limb))
             {
@@ -118,9 +118,9 @@ namespace SackranyPawn.Entities.Modules
         }
         void ActivateModule(Limb instance)
         {
-            if (instance is IUpdateModule u) _updateModules.Add(u);
-            if (instance is IFixedUpdateModule f) _fixedUpdateModules.Add(f);
-            if (instance is ILateUpdateModule l) _lateUpdateModules.Add(l);
+            if (instance is IUpdateLimb u) _updateModules.Add(u);
+            if (instance is IFixedUpdateLimb f) _fixedUpdateModules.Add(f);
+            if (instance is ILateUpdateLimb l) _lateUpdateModules.Add(l);
             instance.Start();
             OnModuleAdded?.Invoke(instance);
         }
@@ -179,9 +179,9 @@ namespace SackranyPawn.Entities.Modules
         }
         void RemoveSingle(int id, Limb instance)
         {
-            if (instance is IUpdateModule u) _updateModules.Remove(u);
-            if (instance is IFixedUpdateModule f) _fixedUpdateModules.Remove(f);
-            if (instance is ILateUpdateModule l) _lateUpdateModules.Remove(l);
+            if (instance is IUpdateLimb u) _updateModules.Remove(u);
+            if (instance is IFixedUpdateLimb f) _fixedUpdateModules.Remove(f);
+            if (instance is ILateUpdateLimb l) _lateUpdateModules.Remove(l);
             _limbs.Remove(id);
             OnModuleRemoved?.Invoke(instance);
             instance.Dispose();
@@ -298,9 +298,9 @@ namespace SackranyPawn.Entities.Modules
         #endregion
 
         #region UPDATE
-        readonly List<IUpdateModule> _updateModules = new List<IUpdateModule>();
-        readonly List<IFixedUpdateModule> _fixedUpdateModules = new List<IFixedUpdateModule>();
-        readonly List<ILateUpdateModule> _lateUpdateModules = new List<ILateUpdateModule>();
+        readonly List<IUpdateLimb> _updateModules = new List<IUpdateLimb>();
+        readonly List<IFixedUpdateLimb> _fixedUpdateModules = new List<IFixedUpdateLimb>();
+        readonly List<ILateUpdateLimb> _lateUpdateModules = new List<ILateUpdateLimb>();
 
         public void Update(float deltaTime)
         {

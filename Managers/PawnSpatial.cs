@@ -43,7 +43,6 @@ namespace SackranyPawn.Managers
             PawnRegister.OnPawnUnregistered += UnregisterInternal;
             
             var loop = PlayerLoop.GetCurrentPlayerLoop();
-            PlayerLoopUtils.Remove<PawnSpatialUpdateSystem>(ref loop);
 
             PlayerLoopUtils.InsertAfter<Update.ScriptRunBehaviourUpdate>(ref loop, new PlayerLoopSystem
             {
@@ -51,6 +50,16 @@ namespace SackranyPawn.Managers
                 updateDelegate = Tick
             });
 
+            PlayerLoop.SetPlayerLoop(loop);
+
+            Application.quitting -= CleanUp;
+            Application.quitting += CleanUp;
+        }
+
+        static void CleanUp()
+        {
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
+            PlayerLoopUtils.Remove<PawnSpatialUpdateSystem>(ref loop);
             PlayerLoop.SetPlayerLoop(loop);
         }
 

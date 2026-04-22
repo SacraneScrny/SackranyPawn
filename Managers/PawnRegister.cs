@@ -5,7 +5,7 @@ using System.Linq;
 using SackranyPawn.Cache;
 using SackranyPawn.Components;
 using SackranyPawn.Entities;
-using SackranyPawn.Traits.Tags;
+using SackranyPawn.Traits.PawnTags;
 
 using UnityEngine;
 
@@ -159,8 +159,8 @@ namespace SackranyPawn.Managers
                 if (cond(unit)) return true;
             return false;
         }
-        public static bool HasPawnsWithTag<T>() where T : ITag
-            => _cachedTags.TryGetValue(TypeRegistry<ITag>.Id<T>.Value, out var b) && b.Count > 0;
+        public static bool HasPawnsWithTag<T>() where T : IPawnTag
+            => _cachedTags.TryGetValue(TypeRegistry<IPawnTag>.Id<T>.Value, out var b) && b.Count > 0;
 
         #region GET
         public static Pawn GetPawn(Func<Pawn, bool> cond)
@@ -172,17 +172,17 @@ namespace SackranyPawn.Managers
             }
             return null;
         }
-        public static Pawn GetPawnWithTag<T>() where T : ITag
+        public static Pawn GetPawnWithTag<T>() where T : IPawnTag
         {
-            int id = TypeRegistry<ITag>.Id<T>.Value;
+            int id = TypeRegistry<IPawnTag>.Id<T>.Value;
             if (!_cachedTags.TryGetValue(id, out var bucket)) return null;
             foreach (var kvp in bucket)
                 if (kvp.Value.IsActive) return kvp.Value;
             return null;
         }
-        public static Pawn GetPawnWithTag<T>(Func<Pawn, bool> cond) where T : ITag
+        public static Pawn GetPawnWithTag<T>(Func<Pawn, bool> cond) where T : IPawnTag
         {
-            int id = TypeRegistry<ITag>.Id<T>.Value;
+            int id = TypeRegistry<IPawnTag>.Id<T>.Value;
             if (!_cachedTags.TryGetValue(id, out var bucket)) return null;
             foreach (var kvp in bucket)
                 if (kvp.Value.IsActive && cond(kvp.Value)) return kvp.Value;
@@ -226,12 +226,12 @@ namespace SackranyPawn.Managers
             value = teams.First().Value;
             return true;
         }
-        public static bool TryGetPawnWithTag<T>(out Pawn value) where T : ITag
+        public static bool TryGetPawnWithTag<T>(out Pawn value) where T : IPawnTag
         {
             value = GetPawnWithTag<T>();
             return value != null;
         }
-        public static bool TryGetPawnWithTag<T>(Func<Pawn, bool> cond, out Pawn value) where T : ITag
+        public static bool TryGetPawnWithTag<T>(Func<Pawn, bool> cond, out Pawn value) where T : IPawnTag
         {
             value = GetPawnWithTag<T>(cond);
             return value != null;
@@ -269,12 +269,12 @@ namespace SackranyPawn.Managers
             return value.Count > 0;
         }
 
-        public static bool TryGetPawnsWithTag<T>(out Pawn[] value) where T : ITag
+        public static bool TryGetPawnsWithTag<T>(out Pawn[] value) where T : IPawnTag
         {
             value = GetAllPawnsWithTag<T>().ToArray();
             return value.Length > 0;
         }
-        public static bool TryGetPawnsWithTag<T>(Func<Pawn, bool> cond, out Pawn[] value) where T : ITag
+        public static bool TryGetPawnsWithTag<T>(Func<Pawn, bool> cond, out Pawn[] value) where T : IPawnTag
         {
             value = GetAllPawnsWithTag<T>(cond).ToArray();
             return value.Length > 0;
@@ -295,15 +295,15 @@ namespace SackranyPawn.Managers
                 ? archetypes.Select(x => x.Value)
                 : Array.Empty<Pawn>();
 
-        public static IEnumerable<Pawn> GetAllPawnsWithTag<T>() where T : ITag
+        public static IEnumerable<Pawn> GetAllPawnsWithTag<T>() where T : IPawnTag
         {
-            int id = TypeRegistry<ITag>.Id<T>.Value;
+            int id = TypeRegistry<IPawnTag>.Id<T>.Value;
             if (!_cachedTags.TryGetValue(id, out var bucket)) return Array.Empty<Pawn>();
             return bucket.Values.Where(u => u.IsActive);
         }
-        public static IEnumerable<Pawn> GetAllPawnsWithTag<T>(Func<Pawn, bool> cond) where T : ITag
+        public static IEnumerable<Pawn> GetAllPawnsWithTag<T>(Func<Pawn, bool> cond) where T : IPawnTag
         {
-            int id = TypeRegistry<ITag>.Id<T>.Value;
+            int id = TypeRegistry<IPawnTag>.Id<T>.Value;
             if (!_cachedTags.TryGetValue(id, out var bucket)) return Array.Empty<Pawn>();
             return bucket.Values.Where(u => u.IsActive && cond(u));
         }

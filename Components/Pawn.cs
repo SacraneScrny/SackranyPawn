@@ -8,7 +8,7 @@ using SackranyPawn.Entities;
 using SackranyPawn.Entities.Modules;
 using SackranyPawn.Managers;
 using SackranyPawn.Traits.PawnEvents;
-using SackranyPawn.Traits.Tags;
+using SackranyPawn.Traits.PawnTags;
 
 using UnityEngine;
 
@@ -25,8 +25,8 @@ namespace SackranyPawn.Components
         public PawnEventBus Event;
 
         [SerializeField] Body Body;
-        public Body GetController() => Body;
-        public IEnumerable<Limb> GetModules() => Body?.GetLimbs();
+        public Body GetBody() => Body;
+        public IEnumerable<Limb> GetLimbs() => Body?.GetLimbs();
         
         public PawnArchetype Archetype => _archetype;
         [SerializeField] PawnArchetype _archetype;
@@ -82,7 +82,7 @@ namespace SackranyPawn.Components
         }
 
         #region MODULES
-        public bool Add(Limb limb, out Limb result) => Body.Add(limb, out result);
+        public bool TryAdd(Limb limb, out Limb result) => Body.TryAdd(limb, out result);
         public bool Add(Limb limb) => Body.Add(limb);
         public bool Add(Limb[] limbs) => Body.Add(limbs);
         

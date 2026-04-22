@@ -1,6 +1,6 @@
 ﻿namespace SackranyPawn.Entities.Modules.ModuleComposition
 {
-    public interface IUpdateModule
+    public interface IUpdateLimb
     {
         public void OnUpdate(float deltaTime);
     }

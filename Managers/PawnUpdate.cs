@@ -14,9 +14,6 @@ namespace SackranyPawn.Managers
         static void Init()
         {
             var loop = PlayerLoop.GetCurrentPlayerLoop();
-            PlayerLoopUtils.Remove<PawnUpdateSystem>(ref loop);
-            PlayerLoopUtils.Remove<PawnFixedUpdateSystem>(ref loop);
-            PlayerLoopUtils.Remove<PawnLateUpdateSystem>(ref loop);
 
             PlayerLoopUtils.InsertAfter<Update.ScriptRunBehaviourUpdate>(ref loop, new PlayerLoopSystem
             {
@@ -34,6 +31,17 @@ namespace SackranyPawn.Managers
                 updateDelegate = LateTick
             });
 
+            PlayerLoop.SetPlayerLoop(loop);
+            
+            Application.quitting -= CleanUp;
+            Application.quitting += CleanUp;
+        }
+        static void CleanUp()
+        {
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
+            PlayerLoopUtils.Remove<PawnUpdateSystem>(ref loop);
+            PlayerLoopUtils.Remove<PawnFixedUpdateSystem>(ref loop);
+            PlayerLoopUtils.Remove<PawnLateUpdateSystem>(ref loop);
             PlayerLoop.SetPlayerLoop(loop);
         }
 

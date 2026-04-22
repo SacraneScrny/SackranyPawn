@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Traits.Effects
 {
-    public class EffectHandler : AsyncLimb, IUpdateModule, IFixedUpdateModule
+    public class EffectHandler : AsyncLimb, IUpdateLimb, IFixedUpdateLimb
     {
         [SerializeField][SerializeReference][SubclassSelector] 
         public EffectTemplate[] Default;

@@ -10,8 +10,8 @@ using UnityEngine;
 
 namespace SackranyPawn.Traits.Stats
 {
-    [UpdateOrder(Order.BeforeAll)]
     [Serializable]
+    [UpdateOrder(Order.BeforeAll)]
     public class StatHandler : Limb
     {
         [SerializeField][SerializeReference][SubclassSelector]

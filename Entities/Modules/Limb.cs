@@ -3,6 +3,7 @@ using System.Threading;
 
 namespace SackranyPawn.Entities.Modules
 {
+    [Serializable]
     public abstract class Limb : PawnBase, IDisposable
     {
         public bool IsAwaken { get; private set; }
@@ -45,7 +46,7 @@ namespace SackranyPawn.Entities.Modules
             IsDisposed = true;
         }
         
-        public bool Add(Limb limb, out Limb result) => Body.Add(limb, out result);
+        public bool TryAdd(Limb limb, out Limb result) => Body.TryAdd(limb, out result);
         public bool Add(Limb limb) => Body.Add(limb);
         public bool Add(Limb[] limbs) => Body.Add(limbs);
         
@@ -79,6 +80,8 @@ namespace SackranyPawn.Entities.Modules
         protected virtual void OnReset() { }
         protected virtual void OnDispose() { }
     }
+    
+    [Serializable]
     public class AsyncLimb : Limb
     {
         CancellationTokenSource _lifecycleCts;

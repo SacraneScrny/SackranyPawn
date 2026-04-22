@@ -7,13 +7,13 @@ using SackranyPawn.Entities;
 
 using UnityEngine;
 
-namespace SackranyPawn.Traits.Tags
+namespace SackranyPawn.Traits.PawnTags
 {
     [System.Serializable]
     public class PawnTag : APawnData
     {
         [SerializeField][SerializeReference][SubclassSelector]
-        ITag[] _defaultTags = Array.Empty<ITag>();
+        IPawnTag[] _defaultTags = Array.Empty<IPawnTag>();
 
         readonly HashSet<int> _tags = new();
 
@@ -23,23 +23,23 @@ namespace SackranyPawn.Traits.Tags
                 _tags.Add(tag.Id);
         }
 
-        public bool HasTag<T>()  where T : ITag => _tags.Contains(TypeRegistry<ITag>.Id<T>.Value);
-        public bool HasTag(ITag tag) => _tags.Contains(tag.Id);
+        public bool HasTag<T>()  where T : IPawnTag => _tags.Contains(TypeRegistry<IPawnTag>.Id<T>.Value);
+        public bool HasTag(IPawnTag pawnTag) => _tags.Contains(pawnTag.Id);
         public bool HasTag(int id) => _tags.Contains(id);
 
-        public bool HasAll<TA, TB>() where TA : ITag where TB : ITag
+        public bool HasAll<TA, TB>() where TA : IPawnTag where TB : IPawnTag
             => HasTag<TA>() && HasTag<TB>();
-        public bool HasAll(params ITag[] tags)
+        public bool HasAll(params IPawnTag[] tags)
             => tags.All(t => HasTag(t.Id));
 
-        public bool HasAny<TA, TB>() where TA : ITag where TB : ITag
+        public bool HasAny<TA, TB>() where TA : IPawnTag where TB : IPawnTag
             => HasTag<TA>() || HasTag<TB>();
-        public bool HasAny(params ITag[] tags)
+        public bool HasAny(params IPawnTag[] tags)
             => tags.Any(t => HasTag(t.Id));
 
 
-        public bool Add<T>() where T : ITag => Add(TypeRegistry<ITag>.Id<T>.Value);
-        public bool Add(ITag tag) => Add(tag.Id);
+        public bool Add<T>() where T : IPawnTag => Add(TypeRegistry<IPawnTag>.Id<T>.Value);
+        public bool Add(IPawnTag pawnTag) => Add(pawnTag.Id);
         bool Add(int id)
         {
             if (!_tags.Add(id)) return false;
@@ -47,8 +47,8 @@ namespace SackranyPawn.Traits.Tags
             return true;
         }
 
-        public bool Remove<T>() where T : ITag => Remove(TypeRegistry<ITag>.Id<T>.Value);
-        public bool Remove(ITag tag) => Remove(tag.Id);
+        public bool Remove<T>() where T : IPawnTag => Remove(TypeRegistry<IPawnTag>.Id<T>.Value);
+        public bool Remove(IPawnTag pawnTag) => Remove(pawnTag.Id);
         bool Remove(int id)
         {
             if (!_tags.Remove(id)) return false;
