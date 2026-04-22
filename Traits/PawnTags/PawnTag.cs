@@ -63,7 +63,10 @@ namespace SackranyPawn.Traits.PawnTags
                 OnTagRemoved?.Invoke(tag);
             _tags.Clear();
             foreach (var tag in _defaultTags)
+            {
                 _tags.Add(tag.Id);
+                OnTagAdded?.Invoke(tag.Id);
+            }
         }
         
         public event Action<int> OnTagAdded;

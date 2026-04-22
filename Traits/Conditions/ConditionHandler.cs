@@ -49,6 +49,8 @@ namespace SackranyPawn.Traits.Conditions
             => BlockInternal(condition.Id, amount);
         void BlockInternal(int id, int amount)
         {
+            if (amount <= 0) return;
+            
             bool before = IsAllowedInternal(id);
             _blocks.TryGetValue(id, out int current);
             _blocks[id] = current + amount;
@@ -70,6 +72,8 @@ namespace SackranyPawn.Traits.Conditions
         }
         bool UnblockInternal(int id, int amount)
         {
+            if (amount <= 0) return false;
+            
             if (!_blocks.TryGetValue(id, out int current)) return false;
             bool before = IsAllowedInternal(id);
             int next = Math.Max(0, current - amount);

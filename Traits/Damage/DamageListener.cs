@@ -9,7 +9,7 @@ namespace SackranyPawn.Traits.Damage
         [Dependency] protected IDamageListener<T>[] _damageListeners;
         public readonly SequentialRewriteVariable<T> DamageOverwrite = new ();
         
-        protected override void OnStart()
+        protected sealed override void OnStart()
         {
             Pawn.Event.Subscribe<Events.OnDamage, T>(ProcessDamage);
         }
@@ -37,7 +37,7 @@ namespace SackranyPawn.Traits.Damage
         public event DamageHandler OnDamage;
     }
     
-    public class DamageListenerFloat : DamageListener<float> { }
+    public class DefaultDamageListener : DamageListener<DamageInfo> { }
     
     public interface IDamageListener<in T>
         where T : struct

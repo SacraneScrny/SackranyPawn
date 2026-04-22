@@ -138,9 +138,9 @@ namespace SackranyPawn.Components
         public void StopWork()
         {
             if (!IsWorking) return;
-            IsWorking = false;
             PawnRegister.UnregisterPawn(this);
             OnStopWorking?.Invoke(this);
+            IsWorking = false;
         }
         
         public void ResetState()

@@ -22,6 +22,7 @@ namespace SackranyPawn.Traits.Damage
         bool HitSomebody();
         bool HitSelf();
         bool FriendlyFire();
+        bool HasAttacker();
     }
     public readonly struct DamageInfo : IDamage<float>
     {
@@ -35,8 +36,9 @@ namespace SackranyPawn.Traits.Damage
         public GameObject GameObject { get; }
         
         public bool HitSomebody() => Target != null;
-        public bool HitSelf() => HitSomebody() && Attacker == Target;
-        public bool FriendlyFire() => HitSomebody() && Attacker.Team == Target.Team;
+        public bool HitSelf() => HitSomebody() && HasAttacker() && Attacker == Target;
+        public bool FriendlyFire() => HitSomebody() && HasAttacker() && Attacker.Team == Target.Team;
+        public bool HasAttacker() => Attacker != null;
 
         public DamageInfo(
             float damage,

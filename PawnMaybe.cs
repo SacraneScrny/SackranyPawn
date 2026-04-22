@@ -84,7 +84,9 @@ namespace SackranyPawn
         {
             if (pawn == null) return false;
             if (!pawn.IsActive)
-                await UniTask.WaitWhile(() => !pawn.IsActive, cancellationToken: token);
+                await UniTask.WaitWhile(() => pawn != null && !pawn.IsActive, cancellationToken: token);
+            if (pawn == null) return false;
+            
             return Maybe<TLimb>(pawn, action);
         }
         public static async UniTask<bool> MaybeAsync(this Pawn pawn, Action<Pawn> action,
