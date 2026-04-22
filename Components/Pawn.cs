@@ -6,6 +6,7 @@ using ModifiableVariable;
 using SackranyPawn.Cache;
 using SackranyPawn.Entities;
 using SackranyPawn.Entities.Modules;
+using SackranyPawn.Managers;
 using SackranyPawn.Traits.PawnEvents;
 using SackranyPawn.Traits.Tags;
 
@@ -21,7 +22,7 @@ namespace SackranyPawn.Components
         
         [SerializeField] bool WorkByDefault;
         public PawnTag Tag;
-        public PawnEvents Event;
+        public PawnEventBus Event;
 
         [SerializeField] Body Body;
         public Body GetController() => Body;
@@ -132,14 +133,14 @@ namespace SackranyPawn.Components
         {
             if (IsWorking) return;
             IsWorking = true;
-            PawnRegisterManager.RegisterUnit(this);
+            PawnRegister.RegisterPawn(this);
             OnStartWorking?.Invoke(this);
         }
         public void StopWork()
         {
             if (!IsWorking) return;
             IsWorking = false;
-            PawnRegisterManager.UnregisterUnit(this);
+            PawnRegister.UnregisterPawn(this);
             OnStopWorking?.Invoke(this);
         }
         
@@ -224,7 +225,7 @@ namespace SackranyPawn.Components
         {
             if (_isQuitting) return;
             Body.Dispose();
-            PawnRegisterManager.UnregisterUnit(this);
+            PawnRegister.UnregisterPawn(this);
             Application.quitting -= OnApplicationQuitting;
         }
         

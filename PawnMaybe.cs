@@ -7,6 +7,7 @@ using Sackrany.Actor.Managers;
 
 using SackranyPawn.Components;
 using SackranyPawn.Entities.Modules;
+using SackranyPawn.Managers;
 
 namespace SackranyPawn
 {
@@ -100,14 +101,14 @@ namespace SackranyPawn
         public static bool MaybeFirst<TLimb>(Func<Pawn, bool> predicate, Action<TLimb> action)
             where TLimb : Limb
         {
-            var pawn = PawnRegisterManager.GetPawn(u => u.IsActive && u.Has<TLimb>() && predicate(u));
+            var pawn = PawnRegister.GetPawn(u => u.IsActive && u.Has<TLimb>() && predicate(u));
             return pawn.Maybe(action);
         }
         public static int MaybeAll<TLimb>(Func<Pawn, bool> predicate, Action<TLimb> action)
             where TLimb : Limb
         {
             int count = 0;
-            foreach (var pawn in PawnRegisterManager.GetAllPawns(
+            foreach (var pawn in PawnRegister.GetAllPawns(
                          u => u.IsActive && u.Has<TLimb>() && predicate(u)))
                 if (pawn.Maybe(action))
                     count++;

@@ -1,5 +1,4 @@
-﻿using System;
-using SackranyPawn.Entities.Modules;
+﻿using SackranyPawn.Entities.Modules;
 using SackranyPawn.Traits.PawnEvents;
 
 namespace SackranyPawn.Traits.Damage

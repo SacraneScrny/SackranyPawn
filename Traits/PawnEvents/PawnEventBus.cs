@@ -5,7 +5,7 @@ using SackranyPawn.Traits.PawnEvents.Interfaces;
 
 namespace SackranyPawn.Traits.PawnEvents
 {
-    public class PawnEvents : IBusListener, IBusPublisher
+    public class PawnEventBus : IBusListener, IBusPublisher
     {
         readonly Dictionary<(int id, Type type), Delegate> _events = new();
 
