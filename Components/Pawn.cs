@@ -143,28 +143,20 @@ namespace SackranyPawn.Components
             IsWorking = false;
         }
         
-        public void ResetState()
+        public void ResetPawn()
         {
             if (!Application.isPlaying) return;
             OnReset?.Invoke(this);
             Tag.Reset();
             Event.Reset();
             TimeFlow.Clear();
-            Body.ResetState();
-        }
-        public void Reinitialize()
-        {
-            OnRestart?.Invoke(this);
-            Tag.Reset();
-            Event.Reset();
-            TimeFlow.Clear();
-            Body.Reinitialize();
+            Body.Reset();
         }
         
         public void OnPooled()
         {
             gameObject.SetActive(true);
-            Reinitialize();
+            ResetPawn();
             if (WorkByDefault) StartWork();
         }
         public void OnReleased()

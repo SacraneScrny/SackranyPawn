@@ -6,10 +6,13 @@ namespace SackranyPawn.Entities.Modules
     [Serializable]
     public abstract class Limb : PawnBase, IDisposable
     {
+        public bool IsTemporary { get; private set; }
+        
         public bool IsAwaken { get; private set; }
         public bool IsStarted { get; private set; }
         public bool IsDisposed { get; private set; }
 
+        public void MarkTemporary() => IsTemporary = true;
         public void Awake()
         {
             if (IsAwaken) return;
@@ -40,9 +43,19 @@ namespace SackranyPawn.Entities.Modules
         }
         public void Dispose()
         {
+            if (!IsAwaken)
+            {
+                IsStarted = false;
+                IsAwaken = false;
+                IsDisposed = true;
+                OnDisposeBeforeAwaken();
+                return;
+            }
             if (IsDisposed) return;
             OnDisposeInternal();
             OnDispose();
+            IsStarted = false;
+            IsAwaken = false;
             IsDisposed = true;
         }
         
@@ -51,13 +64,13 @@ namespace SackranyPawn.Entities.Modules
         public bool Add(Limb[] limbs) => Body.Add(limbs);
         
         public bool Remove<T>() where T : Limb => Body.Remove<T>();
-        public bool Remove<T>(T module) where T : Limb => Remove<T>();
+        public bool Remove<T>(T module) where T : Limb => Body.Remove<T>(module);
         public bool Remove(Type type) => Body.Remove(type);
 
         public void RemoveAll() => Body.RemoveAll();
         
-        public bool Has<T>() where T : Limb => Body.Has<T>();
-        public bool Has(Type type) => Body.Has(type);
+        public bool Has<T>(bool tryAssignable = false) where T : Limb => Body.Has<T>(tryAssignable);
+        public bool Has(Type type, bool tryAssignable = false) => Body.Has(type, tryAssignable);
         
         public T Get<T>() where T : Limb => Body.Get<T>();
         public Limb Get(Type type) => Body.Get(type); 
@@ -79,13 +92,15 @@ namespace SackranyPawn.Entities.Modules
         protected virtual void OnStart() { }
         protected virtual void OnReset() { }
         protected virtual void OnDispose() { }
+        protected virtual void OnDisposeBeforeAwaken() { }
     }
     
     [Serializable]
     public class AsyncLimb : Limb
     {
         CancellationTokenSource _lifecycleCts;
-        public virtual CancellationToken ModuleToken => _lifecycleCts?.Token ?? CancellationToken.None;
+        public CancellationToken ModuleToken 
+            => IsDisposed ? CancellationToken.None : (_lifecycleCts?.Token ?? CancellationToken.None);
 
         private protected sealed override void OnAwakeInternal()
             => _lifecycleCts = new CancellationTokenSource();
@@ -93,12 +108,13 @@ namespace SackranyPawn.Entities.Modules
         private protected sealed override void OnStartInternal()
         {
             if (_lifecycleCts == null || _lifecycleCts.IsCancellationRequested)
+            {
+                _lifecycleCts?.Dispose();
                 _lifecycleCts = new CancellationTokenSource();
+            }
         }
 
-        private protected sealed override void OnResetInternal()
-            => _lifecycleCts?.Cancel();
-
+        private protected sealed override void OnResetInternal() => _lifecycleCts?.Cancel();
         private protected sealed override void OnDisposeInternal()
         {
             _lifecycleCts?.Cancel();

@@ -12,12 +12,10 @@ namespace SackranyPawn.Cache
         public readonly struct LimbMetadata
         {
             public readonly DependencyField[] Dependencies;
-            public readonly TemplateField Template;
             public readonly int UpdateOrder;
-            public LimbMetadata(DependencyField[] dependencies, TemplateField template, int updateOrder)
+            public LimbMetadata(DependencyField[] dependencies, int updateOrder)
             {
                 Dependencies = dependencies;
-                Template = template;
                 UpdateOrder = updateOrder;
             }
         }
@@ -39,17 +37,6 @@ namespace SackranyPawn.Cache
             }
         }
 
-        public readonly struct TemplateField
-        {
-            public readonly FieldInfo Field;
-            public readonly Type FieldType;
-            public TemplateField(FieldInfo field, Type fieldType)
-            {
-                Field = field;
-                FieldType = fieldType;
-            }
-        }
-
         static readonly Dictionary<Type, LimbMetadata> _cache = new();
 
         public static LimbMetadata GetMetadata(Type limbType)
@@ -65,7 +52,6 @@ namespace SackranyPawn.Cache
         static LimbMetadata BuildMetadata(Type type)
         {
             var deps = new List<DependencyField>();
-            var templates = new List<TemplateField>();
             int order = 0;
 
             var current = type;
@@ -83,15 +69,11 @@ namespace SackranyPawn.Cache
                     {
                         bool isArray = field.FieldType.IsArray;
                         deps.Add(new DependencyField(
-                            field:       field,
-                            fieldType:   field.FieldType,
+                            field: field,
+                            fieldType: field.FieldType,
                             elementType: isArray ? field.FieldType.GetElementType() : null,
-                            isArray:     isArray,
-                            isOptional:  dep.Optional));
-                    }
-                    else if (field.GetCustomAttribute<TemplateAttribute>() != null)
-                    {
-                        templates.Add(new TemplateField(field, field.FieldType));
+                            isArray: isArray,
+                            isOptional: dep.Optional));
                     }
                 }
 
@@ -101,7 +83,7 @@ namespace SackranyPawn.Cache
                 current = current.BaseType;
             }
 
-            return new LimbMetadata(deps.ToArray(), templates.FirstOrDefault(), order);
+            return new LimbMetadata(deps.ToArray(), order);
         }
     }
 }

@@ -11,12 +11,6 @@ namespace SackranyPawn.Entities.Modules
             Optional = optional;
         }
     }
-
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class TemplateAttribute : Attribute
-    {
-        public TemplateAttribute() { }
-    }
     
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class HashKeyAttribute : Attribute

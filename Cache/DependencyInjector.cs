@@ -12,7 +12,7 @@ namespace SackranyPawn.Cache
         {
             return InjectDependencies(target, body);
         }
-        public static bool InjectDependencies(object target, Body modules)
+        public static bool InjectDependencies(object target, Body body)
         {
             var meta = LimbReflectionCache.GetMetadata(target.GetType());
 
@@ -20,19 +20,28 @@ namespace SackranyPawn.Cache
             {
                 if (dep.IsArray)
                 {
-                    var found = modules.GetAllAssignable(dep.ElementType);
+                    object[] found = body.GetAllAssignable(dep.ElementType);
+                    if ((found == null || found.Length == 0))
+                    {
+                        found = body.GetAllAssignableComponents(dep.ElementType);
+                    }
+
                     if ((found == null || found.Length == 0) && !dep.IsOptional)
                         return false;
 
                     var array = Array.CreateInstance(dep.ElementType, found.Length);
                     for (int i = 0; i < found.Length; i++)
+                    {
+                        if (!dep.ElementType.IsInstanceOfType(found[i]))
+                            continue;
                         array.SetValue(found[i], i);
+                    }
 
                     dep.Field.SetValue(target, array);
                 }
                 else
                 {
-                    if (!TryResolve(dep.FieldType, modules, out var resolved))
+                    if (!TryResolve(dep.FieldType, body, out var resolved))
                     {
                         if (!dep.IsOptional) return false;
                         continue;
