@@ -153,13 +153,13 @@ namespace SackranyPawn.Components
             Body.Reset();
         }
         
-        public void OnPooled()
+        public void OnPopped()
         {
             gameObject.SetActive(true);
             ResetPawn();
             if (WorkByDefault) StartWork();
         }
-        public void OnReleased()
+        public void OnPushed()
         {
             StopWork();
             gameObject.SetActive(false);
