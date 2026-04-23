@@ -49,7 +49,7 @@ namespace SackranyPawn.Managers
         {
             float dt = Time.deltaTime * PawnTimeflow.CurrentTimeFlow;
             var pawns = PawnRegister.RegisteredPawns;
-            for (int i = 0; i < pawns.Count; i++)
+            for (int i = pawns.Count - 1; i >= 0; i--)
                 pawns[i].OnUpdate(dt);
         }
 
@@ -57,7 +57,7 @@ namespace SackranyPawn.Managers
         {
             float dt = Time.fixedDeltaTime * PawnTimeflow.CurrentTimeFlow;
             var pawns = PawnRegister.RegisteredPawns;
-            for (int i = 0; i < pawns.Count; i++)
+            for (int i = pawns.Count - 1; i >= 0; i--)
                 pawns[i].OnFixedUpdate(dt);
         }
 
@@ -65,7 +65,7 @@ namespace SackranyPawn.Managers
         {
             float dt = Time.deltaTime * PawnTimeflow.CurrentTimeFlow;
             var pawns = PawnRegister.RegisteredPawns;
-            for (int i = 0; i < pawns.Count; i++)
+            for (int i = pawns.Count - 1; i >= 0; i--)
                 pawns[i].OnLateUpdate(dt);
         }
     }

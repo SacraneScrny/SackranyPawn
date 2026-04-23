@@ -19,7 +19,6 @@ namespace SackranyPawn.Traits.Effects
         public EffectTemplate[] Default;
         
         readonly Dictionary<int, Effect> _effects = new ();
-        readonly Dictionary<int, HashSet<Coroutine>> _effectCoroutines = new ();
         readonly Dictionary<int, List<(UniTask task, CancellationTokenSource cts)>> _effectTasks = new ();
         
         public float deltaTime { get; private set; }

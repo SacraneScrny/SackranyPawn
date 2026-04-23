@@ -37,6 +37,7 @@ namespace SackranyPawn.Managers
             for (int i = 0; i < count; i++)
             {
                 var p = CreatePawn(template.Archetype);
+                if (p == null) continue;
                 p.OnPushed();
                 pawns.Push(p);
             }
@@ -67,7 +68,7 @@ namespace SackranyPawn.Managers
         static Pawn PopInternal(PawnArchetype archetype, Stack<Pawn> pawns)
         {
             var p = pawns.Count == 0 ? CreatePawn(archetype) : pawns.Pop();
-            p.OnPopped();
+            p?.OnPopped();
             return p;
         }
         #endregion
@@ -97,7 +98,7 @@ namespace SackranyPawn.Managers
         #region CREATE
         static Pawn CreatePawn(PawnArchetype archetype)
         {
-            var template = _templates[archetype];
+            if (!_templates.TryGetValue(archetype, out var template)) return null;
             var g = Object.Instantiate(template.gameObject);
             var p = g.GetComponent<Pawn>();
             _goToPawn[g.GetInstanceID()] = p;

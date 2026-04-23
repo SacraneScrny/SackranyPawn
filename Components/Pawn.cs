@@ -178,7 +178,6 @@ namespace SackranyPawn.Components
         
         public event Action<Pawn> OnStartWorking;
         public event Action<Pawn> OnStopWorking;
-        public event Action<Pawn> OnRestart;
         public event Action<Pawn> OnReset;
 
         #region EQUALS

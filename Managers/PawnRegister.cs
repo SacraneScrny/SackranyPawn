@@ -223,8 +223,8 @@ namespace SackranyPawn.Managers
                 value = null;
                 return false;
             }
-            value = teams.First().Value;
-            return true;
+            value = teams.FirstOrDefault().Value;
+            return value != null;
         }
         public static bool TryGetPawnWithTag<T>(out Pawn value) where T : IPawnTag
         {

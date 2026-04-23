@@ -38,6 +38,14 @@ namespace SackranyPawn.Managers
             public Action<Pawn> action;
             public readonly List<Action> callbacks = new();
             public bool completed;
+            public float Timeout;
+
+            float _time;
+            public bool IsTimeOut(float deltaTime)
+            {
+                _time += deltaTime;
+                return _time >= Timeout;
+            }
         }
         public class CommandHandle
         {
@@ -50,6 +58,7 @@ namespace SackranyPawn.Managers
                 else _cmd.callbacks.Add(callback);
                 return this;
             }
+            public bool Cancel() => _commandHandlers.Remove(_cmd);
         }
 
         static async UniTaskVoid ProcessLoop()
@@ -65,6 +74,13 @@ namespace SackranyPawn.Managers
                     for (int i = _commandHandlers.Count - 1; i >= 0; i--)
                     {
                         var cmd = _commandHandlers[i];
+                        if (cmd.IsTimeOut(Time.deltaTime))
+                        {
+                            cmd.callbacks.Clear();
+                            cmd.completed = true;
+                            _commandHandlers.RemoveAt(i);
+                            continue;
+                        }
 
                         if (!PawnRegister.TryGetPawn(cmd.cond, out var unit))
                             continue;
@@ -89,7 +105,7 @@ namespace SackranyPawn.Managers
             _isRunning = false;
         }
 
-        public static CommandHandle Execute(Func<Pawn, bool> cond, Action<Pawn> action)
+        public static CommandHandle Execute(Func<Pawn, bool> cond, Action<Pawn> action, float timeoutSeconds = 15)
         {
             var cmd = new PawnCommand
             {
