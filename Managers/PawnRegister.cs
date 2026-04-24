@@ -218,12 +218,12 @@ namespace SackranyPawn.Managers
         }
         public static bool TryGetPawn(TeamInfo team, out Pawn value)
         {
-            if (!_cachedTeams.TryGetValue(team, out var teams))
+            if (!_cachedTeams.TryGetValue(team, out var teams) || teams.Count == 0)
             {
                 value = null;
                 return false;
             }
-            value = teams.FirstOrDefault().Value;
+            value = teams.First().Value;
             return value != null;
         }
         public static bool TryGetPawnWithTag<T>(out Pawn value) where T : IPawnTag

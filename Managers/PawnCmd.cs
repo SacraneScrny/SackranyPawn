@@ -38,13 +38,13 @@ namespace SackranyPawn.Managers
             public Action<Pawn> action;
             public readonly List<Action> callbacks = new();
             public bool completed;
-            public float Timeout;
+            public float timeout;
 
             float _time;
             public bool IsTimeOut(float deltaTime)
             {
                 _time += deltaTime;
-                return _time >= Timeout;
+                return _time >= timeout;
             }
         }
         public class CommandHandle
@@ -110,7 +110,8 @@ namespace SackranyPawn.Managers
             var cmd = new PawnCommand
             {
                 cond = cond,
-                action = action
+                action = action,
+                timeout = timeoutSeconds,
             };
 
             _commandHandlers.Add(cmd);

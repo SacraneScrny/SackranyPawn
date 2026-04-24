@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using ModifiableVariable;
+using ModifiableVariable.Entities;
 
 using SackranyPawn.Entities.Modules;
 using SackranyPawn.Traits.Stats.Static;
@@ -36,8 +37,8 @@ namespace SackranyPawn.Traits.Stats
         {
             foreach (var v in _stats.Values) v.Clear();
             _stats.Clear();
-            OnStatAdded = null;
-            OnStatRemoved = null;
+            StatAdded = null;
+            StatRemoved = null;
         }
 
         public bool Register<T>(float baseValue) where T : IStat
@@ -48,7 +49,7 @@ namespace SackranyPawn.Traits.Stats
         {
             if (_stats.ContainsKey(id)) return false;
             _stats[id] = new Modifiable<float>(baseValue);
-            OnStatAdded?.Invoke(id);
+            StatAdded?.Invoke(id);
             return true;
         }
         public bool Unregister<T>() where T : IStat
@@ -57,7 +58,7 @@ namespace SackranyPawn.Traits.Stats
             if (!_stats.TryGetValue(id, out var ev)) return false;
             ev.Clear();
             _stats.Remove(id);
-            OnStatRemoved?.Invoke(id);
+            StatRemoved?.Invoke(id);
             return true;
         }
 
@@ -71,9 +72,12 @@ namespace SackranyPawn.Traits.Stats
         public bool HasStat<T>() where T : IStat
             => _stats.ContainsKey(StatRegistry.GetId<T>());
         public float GetValue<T>(float fallback = 0f) where T : IStat
-            => TryGetStat<T>(out var v) ? v.GetValue() : fallback;
+            => TryGetStat<T>(out var v) ? v.Value : fallback;
 
-        public event Action<int> OnStatAdded;
-        public event Action<int> OnStatRemoved;
+        public ValueChangedHandler<float> OnStatChanged<T>(ValueChangedDelegate<float> callback) where T : IStat 
+            => !TryGetStat<T>(out var stat) ? default : stat.OnValueChanged(callback);
+        
+        public event Action<int> StatAdded;
+        public event Action<int> StatRemoved;
     }
 }

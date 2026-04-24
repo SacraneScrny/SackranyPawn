@@ -43,6 +43,7 @@ namespace SackranyPawn.Traits.Conditions
             foreach (var b in _gates.Values) b.Clear();
             _gates.Clear();
         }
+        
         public void Block<T>(int amount = 1) where T : ICondition
             => BlockInternal(ConditionRegistry.GetId<T>(), amount);
         public void Block(ICondition condition, int amount = 1)
@@ -88,7 +89,7 @@ namespace SackranyPawn.Traits.Conditions
         bool IsAllowedInternal(int id)
         {
             if (_blocks.TryGetValue(id, out int count) && count > 0) return false;
-            if (_gates.TryGetValue(id, out var b) && b.Count > 0 && !b.GetValue()) return false;
+            if (_gates.TryGetValue(id, out var b) && b.Count > 0 && !b.Value) return false;
             return true;
         }
         public bool IsBlocked<T>() where T : ICondition

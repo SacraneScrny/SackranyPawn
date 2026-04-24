@@ -1,4 +1,5 @@
 ﻿using ModifiableVariable;
+using ModifiableVariable.Entities;
 
 using SackranyPawn.Components;
 
@@ -24,5 +25,10 @@ namespace SackranyPawn.Traits.Stats
 
         public static bool HasStat<T>(this Pawn pawn) where T : IStat
             => pawn != null && pawn.IsActive && pawn.TryGet(out StatHandler h) && h.HasStat<T>();
+        
+        
+        public static ValueChangedHandler<float> OnStatChanged<T>(this Pawn pawn, ValueChangedDelegate<float> callback) 
+            where T : IStat 
+            => !pawn.TryGetStat<T>(out var stat) ? default : stat.OnValueChanged(callback);
     }
 }
