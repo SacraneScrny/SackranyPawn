@@ -26,7 +26,7 @@ namespace SackranyPawn.Components
 
         [SerializeField] Body Body;
         public Body GetBody() => Body;
-        public IEnumerable<Limb> GetLimbs() => Body?.GetLimbs();
+        public IReadOnlyList<Limb> GetLimbs() => Body?.GetLimbs();
         
         public PawnArchetype Archetype => _archetype;
         [SerializeField] PawnArchetype _archetype;
@@ -35,7 +35,7 @@ namespace SackranyPawn.Components
         
         public Modifiable<float> TimeFlow { get; private set; }
         public bool IsWorking { get; private set; }
-        public bool IsActive => IsWorking && gameObject.activeSelf && gameObject.activeInHierarchy;
+        public bool IsActive => IsWorking && gameObject is { activeSelf: true, activeInHierarchy: true };
         public int Hash { get; private set; }
         
         bool _isInitialized;

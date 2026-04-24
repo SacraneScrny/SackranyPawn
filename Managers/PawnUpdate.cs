@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using SackranyPawn.Components;
+
+using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
@@ -10,9 +14,23 @@ namespace SackranyPawn.Managers
         struct PawnFixedUpdateSystem { }
         struct PawnLateUpdateSystem { }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static bool _isUpdating;
+        static readonly List<(Pawn pawn, bool add)> _pendingChanges = new();
+
+        static readonly List<Pawn> _localPawns = new();
+        static readonly Dictionary<int, int> _localIndex = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Init()
         {
+            _isUpdating = false;
+            _pendingChanges.Clear();
+            _localPawns.Clear();
+            _localIndex.Clear();
+
+            PawnRegister.OnPawnRegistered += OnPawnRegistered;
+            PawnRegister.OnPawnUnregistered += OnPawnUnregistered;
+
             var loop = PlayerLoop.GetCurrentPlayerLoop();
 
             PlayerLoopUtils.InsertAfter<Update.ScriptRunBehaviourUpdate>(ref loop, new PlayerLoopSystem
@@ -32,12 +50,15 @@ namespace SackranyPawn.Managers
             });
 
             PlayerLoop.SetPlayerLoop(loop);
-            
+
             Application.quitting -= CleanUp;
             Application.quitting += CleanUp;
         }
         static void CleanUp()
         {
+            PawnRegister.OnPawnRegistered -= OnPawnRegistered;
+            PawnRegister.OnPawnUnregistered -= OnPawnUnregistered;
+
             var loop = PlayerLoop.GetCurrentPlayerLoop();
             PlayerLoopUtils.Remove<PawnUpdateSystem>(ref loop);
             PlayerLoopUtils.Remove<PawnFixedUpdateSystem>(ref loop);
@@ -45,28 +66,76 @@ namespace SackranyPawn.Managers
             PlayerLoop.SetPlayerLoop(loop);
         }
 
+        static void OnPawnRegistered(Pawn pawn)
+        {
+            if (_isUpdating) _pendingChanges.Add((pawn, true));
+            else AddInternal(pawn);
+        }
+        static void OnPawnUnregistered(Pawn pawn)
+        {
+            if (_isUpdating) _pendingChanges.Add((pawn, false));
+            else RemoveInternal(pawn);
+        }
+
+        static void AddInternal(Pawn pawn)
+        {
+            if (_localIndex.ContainsKey(pawn.Hash)) return;
+            _localIndex[pawn.Hash] = _localPawns.Count;
+            _localPawns.Add(pawn);
+        }
+        static void RemoveInternal(Pawn pawn)
+        {
+            if (!_localIndex.TryGetValue(pawn.Hash, out int idx)) return;
+
+            int last = _localPawns.Count - 1;
+            if (idx != last)
+            {
+                var swapped = _localPawns[last];
+                _localPawns[idx] = swapped;
+                _localIndex[swapped.Hash] = idx;
+            }
+            _localPawns.RemoveAt(last);
+            _localIndex.Remove(pawn.Hash);
+        }
+
+        static void FlushPending()
+        {
+            if (_pendingChanges.Count == 0) return;
+            for (int i = 0; i < _pendingChanges.Count; i++)
+            {
+                var (pawn, add) = _pendingChanges[i];
+                if (add) AddInternal(pawn);
+                else RemoveInternal(pawn);
+            }
+            _pendingChanges.Clear();
+        }
+
         static void Tick()
         {
             float dt = Time.deltaTime * PawnTimeflow.CurrentTimeFlow;
-            var pawns = PawnRegister.RegisteredPawns;
-            for (int i = pawns.Count - 1; i >= 0; i--)
-                pawns[i].OnUpdate(dt);
+            _isUpdating = true;
+            for (int i = 0; i < _localPawns.Count; i++)
+                _localPawns[i].OnUpdate(dt);
+            _isUpdating = false;
+            FlushPending();
         }
-
         static void FixedTick()
         {
             float dt = Time.fixedDeltaTime * PawnTimeflow.CurrentTimeFlow;
-            var pawns = PawnRegister.RegisteredPawns;
-            for (int i = pawns.Count - 1; i >= 0; i--)
-                pawns[i].OnFixedUpdate(dt);
+            _isUpdating = true;
+            for (int i = 0; i < _localPawns.Count; i++)
+                _localPawns[i].OnFixedUpdate(dt);
+            _isUpdating = false;
+            FlushPending();
         }
-
         static void LateTick()
         {
             float dt = Time.deltaTime * PawnTimeflow.CurrentTimeFlow;
-            var pawns = PawnRegister.RegisteredPawns;
-            for (int i = pawns.Count - 1; i >= 0; i--)
-                pawns[i].OnLateUpdate(dt);
+            _isUpdating = true;
+            for (int i = 0; i < _localPawns.Count; i++)
+                _localPawns[i].OnLateUpdate(dt);
+            _isUpdating = false;
+            FlushPending();
         }
     }
 }

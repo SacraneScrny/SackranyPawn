@@ -99,8 +99,15 @@ namespace SackranyPawn.Entities.Modules
     public class AsyncLimb : Limb
     {
         CancellationTokenSource _lifecycleCts;
-        public CancellationToken ModuleToken 
-            => IsDisposed ? CancellationToken.None : (_lifecycleCts?.Token ?? CancellationToken.None);
+        public CancellationToken ModuleToken
+        {
+            get
+            {
+                if (_lifecycleCts != null && !IsDisposed)
+                    return _lifecycleCts.Token;
+                return new CancellationToken(true);
+            }
+        }
 
         private protected sealed override void OnAwakeInternal()
             => _lifecycleCts = new CancellationTokenSource();

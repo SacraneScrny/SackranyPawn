@@ -22,7 +22,7 @@ namespace SackranyPawn.Entities.Modules
         
         public bool IsStarted { get; private set; }
         public bool IsDisposed { get; private set; }
-        public IEnumerable<Limb> GetLimbs() => Limbs;
+        public IReadOnlyList<Limb> GetLimbs() => Limbs;
         
         public void Start()
         {
@@ -95,6 +95,11 @@ namespace SackranyPawn.Entities.Modules
                     dependenciesSolved = false;
                     RemoveInternal(tempLimbs[i].id);
                     tempLimbs.RemoveAt(i);  
+                    
+                    for (int j = tempLimbs.Count - 1; j >= 0; j--)
+                        if (!_limbMap.ContainsKey(tempLimbs[j].id))
+                            tempLimbs.RemoveAt(j);
+                    
                     allAdded = false;
                 }
             }
