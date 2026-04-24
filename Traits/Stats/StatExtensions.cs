@@ -2,6 +2,7 @@
 using ModifiableVariable.Entities;
 
 using SackranyPawn.Components;
+using SackranyPawn.Entities;
 
 namespace SackranyPawn.Traits.Stats
 {

@@ -7,7 +7,7 @@ using SackranyPawn.Components;
 using SackranyPawn.Entities.Modules;
 using SackranyPawn.Managers;
 
-namespace SackranyPawn
+namespace SackranyPawn.Entities
 {
     public static class PawnMaybe
     {

@@ -258,8 +258,6 @@ namespace SackranyPawn.Entities
         Pawn CreateFromPool()
         {
             var pawn = PawnPool.Pop(_prefab);
-            // PawnPool.Pop calls OnPopped() which may StartWork().
-            // Stop here so the builder's lifecycle settings take full control.
             pawn.StopWork();
             return pawn;
         }
@@ -290,13 +288,7 @@ namespace SackranyPawn.Entities
             if (_limbs.Count == 0) return;
 
             var body = pawn.GetBody();
-
-            // Ensure Body.Start() has run so the serialized limbs are already in
-            // _limbMap before we inject builder limbs alongside them.
-            // Body.Start() is idempotent — Unity's own Start() callback will no-op.
             body.Start();
-
-            // asTemp: false — builder limbs are treated as persistent, not wiped by Reset().
             body.Add(_limbs.ToArray(), false);
         }
 
