@@ -1,6 +1,5 @@
 {
     "name": "SackranyPawn",
-    "rootNamespace": "SackranyPawn",
     "references": [
         "MackySoft.SerializeReferenceExtensions",
         "R3.Unity",

@@ -17,7 +17,7 @@ namespace SackranyPawn.Traits.Effects
     public class EffectHandler : AsyncLimb, IUpdateLimb, IFixedUpdateLimb
     {
         [SerializeField][SerializeReference][SubclassSelector] 
-        public EffectTemplate[] Default;
+        public Effect[] Default;
         
         readonly Dictionary<int, Effect> _effects = new ();
         readonly Dictionary<int, List<(UniTask task, CancellationTokenSource cts)>> _effectTasks = new ();
@@ -31,7 +31,7 @@ namespace SackranyPawn.Traits.Effects
         }
 
         #region Effect
-        public bool ApplyEffects(EffectTemplate[] effects)
+        public bool ApplyEffects(Effect[] effects)
         {
             bool allApplied = true;
             foreach (var effect in effects)
@@ -41,21 +41,19 @@ namespace SackranyPawn.Traits.Effects
             return allApplied;
         }
         
-        public bool ApplyEffect<T>(int amount = 1) where T : EffectTemplate, new ()
+        public bool ApplyEffect<T>(int amount = 1) where T : Effect, new ()
             => ApplyEffect(new T(), amount);
-        public bool ApplyEffect(EffectTemplate effect, int amount = 1)
+        public bool ApplyEffect(Effect effect, int amount = 1)
         {
             if (!Pawn.IsActive) return false;
-            if (_effects.TryGetValue(effect.GetId(), out var e))
+            if (_effects.TryGetValue(effect.Id, out var e))
             {
                 e.IncreaseAmount(amount);
                 return true;
             }
-
-            var instance = effect.GetInstance();
             
-            _effects.Add(effect.GetId(), instance);
-            instance.Initialize(this, amount);
+            _effects.Add(effect.Id, effect);
+            effect.Initialize(this, amount);
             return true;
         }
         

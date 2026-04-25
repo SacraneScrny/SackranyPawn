@@ -270,16 +270,4 @@ namespace SackranyPawn.Traits.Effects
     {
         public sealed override int Id => EffectRegistry.GetId<TSelf>();
     }
-    
-    public interface EffectTemplate
-    {
-        public int GetId();
-        public Effect GetInstance();
-    }
-    public interface EffectTemplate<out T> : EffectTemplate
-        where T : Effect, new ()
-    {
-        int EffectTemplate.GetId() => EffectRegistry.GetId<T>();
-        Effect EffectTemplate.GetInstance() => new T();
-    }
 }

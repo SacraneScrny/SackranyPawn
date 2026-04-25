@@ -5,11 +5,11 @@ namespace SackranyPawn.Traits.Effects
 {
     public static class EffectExtensions
     {        
-        public static bool ApplyEffects(this Pawn pawn, EffectTemplate[] effects)
+        public static bool ApplyEffects(this Pawn pawn, Effect[] effects)
             => pawn.Maybe<EffectHandler>(h => h.ApplyEffects(effects));
-        public static bool ApplyEffect<T>(this Pawn pawn, int amount = 1) where T : EffectTemplate, new ()
+        public static bool ApplyEffect<T>(this Pawn pawn, int amount = 1) where T : Effect, new ()
             => pawn.Maybe<EffectHandler>(h => h.ApplyEffect<T>(amount));
-        public static bool ApplyEffect<T>(this Pawn pawn, T effect, int amount = 1) where T : EffectTemplate
+        public static bool ApplyEffect<T>(this Pawn pawn, T effect, int amount = 1) where T : Effect
             => pawn.Maybe<EffectHandler>(h => h.ApplyEffect(effect, amount));
 
         public static bool RemoveEffect<T>(this Pawn pawn) where T : Effect
