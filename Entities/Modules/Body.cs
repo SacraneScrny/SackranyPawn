@@ -343,7 +343,7 @@ namespace SackranyPawn.Entities.Modules
         bool DependencyCheck(Limb m) => DependencyInjector.InjectDependencies(m, this) && m.OnDependencyCheck();
         #endregion
 
-        #region UPDATE
+        #region UPDATE 
         readonly List<IUpdateLimb> _updateModules = new ();
         readonly List<IFixedUpdateLimb> _fixedUpdateModules = new ();
         readonly List<ILateUpdateLimb> _lateUpdateModules = new ();
