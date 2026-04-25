@@ -64,7 +64,7 @@ namespace SackranyPawn.Entities.Modules
         public bool Add(Limb[] limbs) => Body.Add(limbs);
         
         public bool Remove<T>() where T : Limb => Body.Remove<T>();
-        public bool Remove<T>(T module) where T : Limb => Body.Remove<T>(module);
+        public bool Remove(Limb module) => Body.Remove(module);
         public bool Remove(Type type) => Body.Remove(type);
 
         public void RemoveAll() => Body.RemoveAll();

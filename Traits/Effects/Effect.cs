@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Traits.Effects
 {
+    [Serializable]
     public abstract class Effect : IDisposable
     {
         public abstract int Id { get; }
@@ -263,6 +264,7 @@ namespace SackranyPawn.Traits.Effects
         }
     }
 
+    [Serializable]
     public abstract class Effect<TSelf> : Effect 
         where TSelf : Effect<TSelf>
     {

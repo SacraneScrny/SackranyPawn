@@ -93,7 +93,7 @@ namespace SackranyPawn.Components
         public Limb Get(Type type) => Body.Get(type); 
         
         public bool Remove<T>() where T : Limb => Body.Remove<T>();
-        public bool Remove<T>(T module) where T : Limb => Remove<T>();
+        public bool Remove(Limb module) => Body.Remove(module);
         public bool Remove(Type type) => Body.Remove(type);
 
         public void RemoveAll() => Body.RemoveAll();

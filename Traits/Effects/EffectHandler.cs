@@ -13,6 +13,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Traits.Effects
 {
+    [Serializable]
     public class EffectHandler : AsyncLimb, IUpdateLimb, IFixedUpdateLimb
     {
         [SerializeField][SerializeReference][SubclassSelector] 
@@ -68,7 +69,7 @@ namespace SackranyPawn.Traits.Effects
             e.Dispose();
             return true;
         }
-        public bool RemoveEffect<T>(T effect) where T : Effect
+        public bool RemoveEffect(Effect effect)
         {
             if (!Pawn.IsActive) return false;
             if (!_effects.TryGetValue(effect.Id, out var e))

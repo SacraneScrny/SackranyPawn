@@ -14,8 +14,8 @@ namespace SackranyPawn.Traits.Effects
 
         public static bool RemoveEffect<T>(this Pawn pawn) where T : Effect
             => pawn.Maybe<EffectHandler>(h => h.RemoveEffect<T>());
-        public static bool RemoveEffect<T>(this Pawn pawn, T effect) where T : Effect 
-            => pawn.Maybe<EffectHandler>(h => h.RemoveEffect<T>(effect));
+        public static bool RemoveEffect(this Pawn pawn, Effect effect) 
+            => pawn.Maybe<EffectHandler>(h => h.RemoveEffect(effect));
         public static bool RemoveAllEffects(this Pawn pawn)
             => pawn.Maybe<EffectHandler>(h => h.RemoveAllEffects());
 

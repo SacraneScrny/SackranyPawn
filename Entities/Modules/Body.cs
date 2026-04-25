@@ -146,7 +146,7 @@ namespace SackranyPawn.Entities.Modules
             if (!IsDynamic) return false;
             return RemoveInternal(LimbRegistry.GetId<T>());
         }
-        public bool Remove<T>(T limb) where T : Limb
+        public bool Remove(Limb limb)
         {
             if (!IsDynamic) return false;
             if (limb == null) return false;
