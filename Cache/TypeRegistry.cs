@@ -10,12 +10,18 @@ namespace SackranyPawn.Cache
         static int _nextId;
 
         public static int Count => _nextId;
-        
+
+        internal static void Reset()
+        {
+            _typeToId.Clear();
+            _idToType.Clear();
+            _nextId = 0;
+        }
+
         public static int GetOrRegister(Type type)
         {
             if (!typeof(TBase).IsAssignableFrom(type)) return -1;
-            if (_typeToId.TryGetValue(type, out var id))
-                return id;
+            if (_typeToId.TryGetValue(type, out var id)) return id;
 
             var newId = _nextId++;
             _typeToId[type] = newId;

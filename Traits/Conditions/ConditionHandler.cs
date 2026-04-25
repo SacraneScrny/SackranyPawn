@@ -44,18 +44,19 @@ namespace SackranyPawn.Traits.Conditions
             _gates.Clear();
         }
         
-        public void Block<T>(int amount = 1) where T : ICondition
+        public bool Block<T>(int amount = 1) where T : ICondition
             => BlockInternal(ConditionRegistry.GetId<T>(), amount);
-        public void Block(ICondition condition, int amount = 1)
+        public bool Block(ICondition condition, int amount = 1)
             => BlockInternal(condition.Id, amount);
-        void BlockInternal(int id, int amount)
+        bool BlockInternal(int id, int amount)
         {
-            if (amount <= 0) return;
+            if (amount <= 0) return false;
             
             bool before = IsAllowedInternal(id);
             _blocks.TryGetValue(id, out int current);
             _blocks[id] = current + amount;
             NotifyIfChanged(id, before);
+            return true;
         }
 
         public bool Unblock<T>(int amount = 1) where T : ICondition

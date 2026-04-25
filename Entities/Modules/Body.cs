@@ -344,9 +344,9 @@ namespace SackranyPawn.Entities.Modules
         #endregion
 
         #region UPDATE
-        readonly List<IUpdateLimb> _updateModules = new List<IUpdateLimb>();
-        readonly List<IFixedUpdateLimb> _fixedUpdateModules = new List<IFixedUpdateLimb>();
-        readonly List<ILateUpdateLimb> _lateUpdateModules = new List<ILateUpdateLimb>();
+        readonly List<IUpdateLimb> _updateModules = new ();
+        readonly List<IFixedUpdateLimb> _fixedUpdateModules = new ();
+        readonly List<ILateUpdateLimb> _lateUpdateModules = new ();
 
         public void Update(float deltaTime)
         {
