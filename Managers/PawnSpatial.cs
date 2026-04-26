@@ -17,10 +17,11 @@ namespace SackranyPawn.Managers
 
         static readonly Dictionary<CellKey, List<Pawn>> _cells = new();
         static readonly Dictionary<int, CellKey> _pawnCell = new();
-        static readonly Dictionary<int, Pawn> _pawns = new();
-        
         static readonly List<Pawn> _pawnList = new();
         static readonly Dictionary<int, int> _pawnListIndex = new();
+
+        static bool _isUpdating;
+        static readonly List<(Pawn pawn, bool add)> _pendingChanges = new();
 
         static float _invCellSize;
 
@@ -28,10 +29,11 @@ namespace SackranyPawn.Managers
         static void Init()
         {
             _cells.Clear();
-            _pawns.Clear();
             _pawnList.Clear();
             _pawnListIndex.Clear();
             _pawnCell.Clear();
+            _isUpdating = false;
+            _pendingChanges.Clear();
             
             _invCellSize = 1f / CellSize;
             
@@ -65,30 +67,13 @@ namespace SackranyPawn.Managers
 
         static void RegisterInternal(Pawn pawn)
         {
-            var key = GetCell(pawn.transform.position);
-            AddToCell(pawn, key);
-            _pawnCell[pawn.Hash] = key;
-            _pawns[pawn.Hash] = pawn;
-            _pawnListIndex[pawn.Hash] = _pawnList.Count;
-            _pawnList.Add(pawn);
+            if (_isUpdating) { _pendingChanges.Add((pawn, true)); return; }
+            RegisterInternalImmediate(pawn);
         }
         static void UnregisterInternal(Pawn pawn)
         {
-            if (!_pawnCell.TryGetValue(pawn.Hash, out var key)) return;
-            RemoveFromCell(pawn, key);
-            _pawnCell.Remove(pawn.Hash);
-            _pawns.Remove(pawn.Hash);
-            
-            int idx  = _pawnListIndex[pawn.Hash];
-            int last = _pawnList.Count - 1;
-            if (idx != last)
-            {
-                var swapped = _pawnList[last];
-                _pawnList[idx] = swapped;
-                _pawnListIndex[swapped.Hash] = idx;
-            }
-            _pawnList.RemoveAt(last);
-            _pawnListIndex.Remove(pawn.Hash);
+            if (_isUpdating) { _pendingChanges.Add((pawn, false)); return; }
+            UnregisterInternalImmediate(pawn);
         }
         static void UpdatePositionInternal(Pawn pawn)
         {
@@ -100,10 +85,51 @@ namespace SackranyPawn.Managers
             _pawnCell[pawn.Hash] = newKey;
         }
         
+        static void RegisterInternalImmediate(Pawn pawn)
+        {
+            var key = GetCell(pawn.transform.position);
+            AddToCell(pawn, key);
+            _pawnCell[pawn.Hash] = key;
+            _pawnListIndex[pawn.Hash] = _pawnList.Count;
+            _pawnList.Add(pawn);
+        }
+        static void UnregisterInternalImmediate(Pawn pawn)
+        {
+            if (!_pawnCell.TryGetValue(pawn.Hash, out var key)) return;
+            RemoveFromCell(pawn, key);
+            _pawnCell.Remove(pawn.Hash);
+
+            int idx = _pawnListIndex[pawn.Hash];
+            int last = _pawnList.Count - 1;
+            if (idx != last)
+            {
+                var swapped = _pawnList[last];
+                _pawnList[idx] = swapped;
+                _pawnListIndex[swapped.Hash] = idx;
+            }
+            _pawnList.RemoveAt(last);
+            _pawnListIndex.Remove(pawn.Hash);
+        }
+        
+        static void FlushPending()
+        {
+            if (_pendingChanges.Count == 0) return;
+            for (int i = 0; i < _pendingChanges.Count; i++)
+            {
+                var (pawn, add) = _pendingChanges[i];
+                if (add) RegisterInternalImmediate(pawn);
+                else UnregisterInternalImmediate(pawn);
+            }
+            _pendingChanges.Clear();
+        }
+        
         static void Tick()
         {
+            _isUpdating = true;
             for (int i = 0; i < _pawnList.Count; i++)
                 UpdatePositionInternal(_pawnList[i]);
+            _isUpdating = false;
+            FlushPending();
         }
         
         public static void GetInRadius(Vector3 center, float radius, List<Pawn> results)
