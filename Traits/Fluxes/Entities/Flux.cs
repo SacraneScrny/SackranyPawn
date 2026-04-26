@@ -83,7 +83,6 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             if (IsStarted) return;
             OnStart();
             IsStarted = true;
-            StateChanged?.Invoke(this, FluxState.Started);
         }
         protected abstract void OnStart();
         public void ForceStop()
@@ -193,7 +192,6 @@ namespace SackranyPawn.Traits.Fluxes.Entities
     public enum FluxState
     {
         None = 0,
-        Started = 10,
         ProgressReached = 15,
         ForceStopped = 20,
         AmountChanged = 25,

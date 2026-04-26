@@ -6,7 +6,6 @@ namespace SackranyPawn.Traits.Fluxes.Entities
     public sealed class FluxCommand : IDisposable
     {
         Flux _flux;
-        List<Action<FluxHandle>> _startedCallbacks;
         List<Action<FluxHandle>> _progressReachedCallbacks;
         List<Action<FluxHandle>> _forceStoppedCallbacks;
         List<Action<FluxHandle>> _amountChangedCallbacks;
@@ -26,7 +25,6 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             
             switch (state)
             {
-                case FluxState.Started: Call(_startedCallbacks); break;
                 case FluxState.ProgressReached: Call(_progressReachedCallbacks); break;
                 case FluxState.ForceStopped: Call(_forceStoppedCallbacks); break;
                 case FluxState.AmountChanged: Call(_amountChangedCallbacks); break;
@@ -44,6 +42,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         }
         void Call(List<Action<FluxHandle>> callbacks)
         {
+            if (callbacks == null) return;
             for (int i = 0; i < callbacks.Count; i++)
                 callbacks[i](_flux);
         }
@@ -59,13 +58,6 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             return false;
         }
         
-        public FluxCommand OnStarted(Action<FluxHandle> callback)
-        {
-            if (AlreadyDisposed()) return this;
-            _startedCallbacks ??= new ();
-            _startedCallbacks.Add(callback);
-            return this;
-        }
         public FluxCommand OnProgressReached(Action<FluxHandle> callback)
         {
             if (AlreadyDisposed()) return this;
@@ -122,9 +114,6 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             
             _flux = null;
             
-            _startedCallbacks?.Clear();
-            _startedCallbacks = null;
-            
             _progressReachedCallbacks?.Clear();
             _progressReachedCallbacks = null;
             
@@ -151,7 +140,5 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             => new(scope.Flux.GetFlux());
         public static FluxCommand AsCommand(this FluxHandle handle) 
             => new(handle.GetFlux());
-        public static FluxCommand AsCommand(this Flux flux) 
-            => new(flux);
     }
 }
