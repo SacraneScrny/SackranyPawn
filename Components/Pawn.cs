@@ -78,7 +78,8 @@ namespace SackranyPawn.Components
         void OnApplicationQuitting() => _isQuitting = true;
         void Start()
         {
-            Body.Start();
+            if (IsWorking)
+                Body.Start();
         }
 
         #region MODULES

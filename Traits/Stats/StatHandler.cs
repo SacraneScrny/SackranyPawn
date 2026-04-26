@@ -89,9 +89,8 @@ namespace SackranyPawn.Traits.Stats
         
         public bool HasStat<T>() where T : IStat
             => _stats.ContainsKey(StatRegistry.GetId<T>());
-        public bool HasStat(IStat stat)
+        public bool HasStat(IStat stat) 
             => _stats.ContainsKey(stat.Id);
-        
         public float GetValue<T>(float fallback = 0f) where T : IStat
             => TryGetStat<T>(out var v) ? v.Value : fallback;
         public float GetValue(IStat stat, float fallback = 0f)

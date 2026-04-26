@@ -3,7 +3,6 @@
 using ModifiableVariable.Entities;
 using ModifiableVariable.Stages.StageFactory;
 
-using SackranyPawn.Components;
 using SackranyPawn.Traits.Conditions;
 using SackranyPawn.Traits.Fluxes.Entities;
 using SackranyPawn.Traits.Stats;
@@ -15,7 +14,7 @@ namespace SackranyPawn.Traits.Fluxes
     [Serializable]
     public sealed class ConditionBlockFlux : Flux<ConditionBlockFlux>
     {
-        [SerializeReference] public ACondition Condition;
+        [SerializeReference] [SubclassSelector] public ACondition Condition;
 
         protected override void OnStart() =>
             Handler.Pawn.Block(Condition);
@@ -27,7 +26,7 @@ namespace SackranyPawn.Traits.Fluxes
     [Serializable]
     public sealed class StatModifierFlux : Flux<StatModifierFlux>
     {
-        [SerializeReference] public AStat Stat;
+        [SerializeReference] [SubclassSelector] public AStat Stat;
         public float Value;
         public General Stage;
 

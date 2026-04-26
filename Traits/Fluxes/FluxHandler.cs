@@ -21,6 +21,16 @@ namespace SackranyPawn.Traits.Fluxes
         public float CachedDeltaTime { get; private set; }
         public float CachedFixedDeltaTime { get; private set; }
         
+        protected override void OnStart()
+        {
+            foreach (var flux in Fluxes)
+            {
+                CacheInternal(flux);
+                flux.Initialize(this, 1);
+                flux.Start();
+            }    
+        }
+        
         protected override void OnReset()
         {
             foreach (var flux in Fluxes)
