@@ -33,6 +33,11 @@ namespace SackranyPawn.Traits.Fluxes.Entities
     [Serializable]
     public abstract class Flux : FluxHandle, ICloneable, IDisposable 
     {
+        #if UNITY_EDITOR
+        public int DebugAmount;
+        public float DebugProgress;
+        #endif
+        
         public abstract int Id { get; }
         public bool IsDisposed { get; private set; }
         public bool IsStarted { get; private set; }
@@ -78,6 +83,11 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             Progress = _progress.ToReadOnlyReactiveProperty();
             _disposables.Add(Amount);
             _disposables.Add(Progress);
+            
+            #if UNITY_EDITOR
+            _disposables.Add(Amount.Subscribe(x => DebugAmount = x));
+            _disposables.Add(Progress.Subscribe(x => DebugProgress = x));
+            #endif
         }
         public void Start()
         {
