@@ -72,6 +72,15 @@ namespace SackranyPawn.Traits.Conditions
             NotifyIfChanged(id, before);
             return true;
         }
+        public bool UnblockAll(ICondition condition)
+        {
+            int id = condition.Id;
+            if (!_blocks.ContainsKey(id)) return false;
+            bool before = IsAllowedInternal(id);
+            _blocks.Remove(id);
+            NotifyIfChanged(id, before);
+            return true;
+        }
         bool UnblockInternal(int id, int amount)
         {
             if (amount <= 0) return false;
@@ -93,17 +102,36 @@ namespace SackranyPawn.Traits.Conditions
             if (_gates.TryGetValue(id, out var b) && b.Count > 0 && !b.Value) return false;
             return true;
         }
+        
         public bool IsBlocked<T>() where T : ICondition
             => !IsAllowed<T>();
+        public bool IsBlocked(ICondition condition)
+            => !IsAllowed(condition);
+        
         public int GetBlockCount<T>() where T : ICondition
         {
             _blocks.TryGetValue(ConditionRegistry.GetId<T>(), out int count);
+            return count;
+        }
+        public int GetBlockCount(ICondition condition) 
+        {
+            _blocks.TryGetValue(condition.Id, out int count);
             return count;
         }
         
         public GateModifiable<bool> GetGate<T>() where T : ICondition
         {
             int id = ConditionRegistry.GetId<T>();
+            if (!_gates.TryGetValue(id, out var b))
+            {
+                b = new GateModifiable<bool>(true);
+                _gates[id] = b;
+            }
+            return b;
+        }        
+        public GateModifiable<bool> GetGate(ICondition condition)
+        {            
+            int id = condition.Id;
             if (!_gates.TryGetValue(id, out var b))
             {
                 b = new GateModifiable<bool>(true);
@@ -124,9 +152,30 @@ namespace SackranyPawn.Traits.Conditions
             NotifyIfChanged(id, before);
             return handle;
         }
+        public ModifierDelegateHandler<bool> AddGate(ICondition condition, ModifierDelegate<bool> predicate, GateGeneral stage)
+        {
+            int id = condition.Id;
+            if (!_gates.TryGetValue(id, out var b))
+            {
+                b = new GateModifiable<bool>(true);
+                _gates[id] = b;
+            }
+            bool before = IsAllowedInternal(id);
+            var handle = b.Add(predicate, stage);
+            NotifyIfChanged(id, before);
+            return handle;
+        }
         public void RemoveGate<T>(ModifierDelegateHandler<bool> handle) where T : ICondition
         {
             int id = ConditionRegistry.GetId<T>();
+            if (!_gates.TryGetValue(id, out var b)) return;
+            bool before = IsAllowedInternal(id);
+            b.Remove(handle);
+            NotifyIfChanged(id, before);
+        }
+        public void RemoveGate(ICondition condition, ModifierDelegateHandler<bool> handle)
+        {
+            int id = condition.Id;
             if (!_gates.TryGetValue(id, out var b)) return;
             bool before = IsAllowedInternal(id);
             b.Remove(handle);

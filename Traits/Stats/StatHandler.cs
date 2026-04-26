@@ -61,21 +61,46 @@ namespace SackranyPawn.Traits.Stats
             StatRemoved?.Invoke(id);
             return true;
         }
+        public bool Unregister(IStat stat)
+        {
+            int id = stat.Id;
+            if (!_stats.TryGetValue(id, out var ev)) return false;
+            ev.Clear();
+            _stats.Remove(id);
+            StatRemoved?.Invoke(id);
+            return true;
+        }
 
         public Modifiable<float> GetStat<T>() where T : IStat
         {
             _stats.TryGetValue(StatRegistry.GetId<T>(), out var v);
             return v;
         }
+        public Modifiable<float> GetStat(IStat stat)
+        {
+            _stats.TryGetValue(stat.Id, out var v);
+            return v;
+        }
+        
         public bool TryGetStat<T>(out Modifiable<float> value) where T : IStat
             => _stats.TryGetValue(StatRegistry.GetId<T>(), out value);
+        public bool TryGetStat(IStat stat, out Modifiable<float> value)
+            => _stats.TryGetValue(stat.Id, out value);
+        
         public bool HasStat<T>() where T : IStat
             => _stats.ContainsKey(StatRegistry.GetId<T>());
+        public bool HasStat(IStat stat)
+            => _stats.ContainsKey(stat.Id);
+        
         public float GetValue<T>(float fallback = 0f) where T : IStat
             => TryGetStat<T>(out var v) ? v.Value : fallback;
+        public float GetValue(IStat stat, float fallback = 0f)
+            => TryGetStat(stat, out var v) ? v.Value : fallback;
 
         public ValueChangedHandler<float> OnStatChanged<T>(ValueChangedDelegate<float> callback) where T : IStat 
             => !TryGetStat<T>(out var stat) ? default : stat.OnValueChanged(callback);
+        public ValueChangedHandler<float> OnStatChanged(IStat stat, ValueChangedDelegate<float> callback) 
+            => !TryGetStat(stat, out var s) ? default : s.OnValueChanged(callback);
         
         public event Action<int> StatAdded;
         public event Action<int> StatRemoved;

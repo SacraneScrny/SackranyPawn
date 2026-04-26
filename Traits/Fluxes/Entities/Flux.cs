@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 
+using Cysharp.Threading.Tasks;
+
 using R3;
 
 using SackranyPawn.Traits.Fluxes.Cache;
@@ -160,6 +162,23 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         protected virtual void OnAmountIncreased(int value) { }
         protected virtual void OnAmountDecreased(int value) { }
         protected virtual void OnOutOfAmount() { }
+
+        internal void StartTask(Func<CancellationToken, UniTask> task)
+        {
+            RunTask(task).Forget();
+        }
+        async UniTaskVoid RunTask(Func<CancellationToken, UniTask> task)
+        {
+            try
+            {
+                await task(Token);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
         
         public void Dispose()
         {
