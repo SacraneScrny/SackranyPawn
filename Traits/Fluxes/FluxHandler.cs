@@ -15,7 +15,8 @@ namespace SackranyPawn.Traits.Fluxes
     {
         [SerializeField] [SerializeReference] [SubclassSelector] List<Flux> Fluxes;
         
-        readonly Dictionary<int, List<FluxHandle>> _fluxesByIds = new();
+        readonly Dictionary<int, int> _fluxIndex = new();
+        readonly Dictionary<int, HashSet<FluxHandle>> _fluxesByIds = new();
         
         public float CachedDeltaTime { get; private set; }
         public float CachedFixedDeltaTime { get; private set; }
@@ -26,6 +27,7 @@ namespace SackranyPawn.Traits.Fluxes
                 flux.Dispose();
             Fluxes.Clear();
             _fluxesByIds.Clear();
+            _fluxIndex.Clear();
             FluxAdded = null;
             FluxRemoved = null;
         }
@@ -69,26 +71,29 @@ namespace SackranyPawn.Traits.Fluxes
             }
             Fluxes.Clear();
             _fluxesByIds.Clear();
+            _fluxIndex.Clear();
         }
         
-        public IReadOnlyList<FluxHandle> GetFluxesById(int id) => _fluxesByIds.GetValueOrDefault(id);
-        public bool TryGetFluxesById(int id, out IReadOnlyList<FluxHandle> result)
+        public IReadOnlyCollection<FluxHandle> GetFluxesById(int id) 
+            => _fluxesByIds.GetValueOrDefault(id) ?? (IReadOnlyCollection<FluxHandle>)Array.Empty<FluxHandle>();
+        public bool TryGetFluxesById(int id, out IReadOnlyCollection<FluxHandle> result)
         {
-            if (_fluxesByIds.TryGetValue(id, out var list))
+            if (_fluxesByIds.TryGetValue(id, out var set))
             {
-                result = list;
+                result = set;
                 return true;
             }
             result = null;
             return false;
         }
 
-        public IReadOnlyList<FluxHandle> GetFluxes<T>() where T : Flux => _fluxesByIds.GetValueOrDefault(FluxRegistry.GetId<T>());
-        public bool TryGetFluxes<T>(out IReadOnlyList<FluxHandle> result) where T : Flux
+        public IReadOnlyCollection<FluxHandle> GetFluxes<T>() where T : Flux 
+            => _fluxesByIds.GetValueOrDefault(FluxRegistry.GetId<T>()) ?? (IReadOnlyCollection<FluxHandle>)Array.Empty<FluxHandle>();
+        public bool TryGetFluxes<T>(out IReadOnlyCollection<FluxHandle> result) where T : Flux
         {
-            if (_fluxesByIds.TryGetValue(FluxRegistry.GetId<T>(), out var list))
+            if (_fluxesByIds.TryGetValue(FluxRegistry.GetId<T>(), out var set))
             {
-                result = list;
+                result = set;
                 return true;
             }
             result = null;
@@ -101,10 +106,11 @@ namespace SackranyPawn.Traits.Fluxes
         {
             if (!_fluxesByIds.TryGetValue(flux.Id, out var fluxes))
             {
-                fluxes = new ();
+                fluxes = new();
                 _fluxesByIds.Add(flux.Id, fluxes);
             }
             fluxes.Add(flux);
+            _fluxIndex[flux.GetHashCode()] = Fluxes.Count;
         }
         void RemoveFromCacheInternal(Flux flux)
         {
@@ -121,10 +127,23 @@ namespace SackranyPawn.Traits.Fluxes
         {
             if (flux == null) return false;
             RemoveFromCacheInternal(flux);
-            var ret = Fluxes.Remove(flux);
+
+            int key = flux.GetHashCode();
+            if (!_fluxIndex.TryGetValue(key, out int idx)) return false;
+
+            int last = Fluxes.Count - 1;
+            if (idx != last)
+            {
+                var swapped = Fluxes[last];
+                Fluxes[idx] = swapped;
+                _fluxIndex[swapped.GetHashCode()] = idx;
+            }
+            Fluxes.RemoveAt(last);
+            _fluxIndex.Remove(key);
+
             FluxRemoved?.Invoke(flux);
             flux.Dispose();
-            return ret;
+            return true;
         }
         #endregion
         

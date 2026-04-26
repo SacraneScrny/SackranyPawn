@@ -95,9 +95,22 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         }
         protected virtual void OnForceStop() { }
 
-        protected virtual bool EvaluateProgress(float dt)
+        protected virtual bool TickProgress(float dt)
         {
             _progress.Value += dt;
+            StateChanged?.Invoke(this, FluxState.ProgressChanged);
+            if (_progress.Value >= 1)
+            {
+                StateChanged?.Invoke(this, FluxState.ProgressReached);
+                _progress.Value = 0;
+                return true;
+            }
+            return false;
+        }
+        protected virtual bool SetProgress(float value)
+        {
+            _progress.Value = Mathf.Clamp01(value);
+            StateChanged?.Invoke(this, FluxState.ProgressChanged);
             if (_progress.Value >= 1)
             {
                 StateChanged?.Invoke(this, FluxState.ProgressReached);
@@ -192,6 +205,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
     public enum FluxState
     {
         None = 0,
+        ProgressChanged = 14,
         ProgressReached = 15,
         ForceStopped = 20,
         AmountChanged = 25,
