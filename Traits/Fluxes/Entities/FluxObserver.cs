@@ -3,11 +3,6 @@ using System.Collections.Generic;
 
 namespace SackranyPawn.Traits.Fluxes.Entities
 {
-    using System;
-using System.Collections.Generic;
-
-namespace SackranyPawn.Traits.Fluxes.Entities
-{
     public sealed class FluxObserver : IDisposable
     {
         Flux _flux;
@@ -23,7 +18,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
                 Once = once;
             }
         }
-        
+
         List<CallbackEntry> _progressChangedCallbacks;
         List<CallbackEntry> _progressReachedCallbacks;
         List<CallbackEntry> _forceStoppedCallbacks;
@@ -32,10 +27,10 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         List<CallbackEntry> _amountDecreasedCallbacks;
         List<CallbackEntry> _outOfAmountCallbacks;
         List<CallbackEntry> _disposingCallbacks;
-        
+
         List<(int threshold, CallbackEntry entry)> _amountReachedCallbacks;
         List<(float threshold, CallbackEntry entry)> _progressReachedThresholdCallbacks;
-        
+
         public FluxObserver(Flux flux)
         {
             _flux = flux;
@@ -88,7 +83,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
                 if (entry.Once) callbacks.RemoveAt(i);
             }
         }
-        
+
         void CallAmountReached()
         {
             if (_amountReachedCallbacks == null) return;
@@ -113,7 +108,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
                 if (entry.Once) _progressReachedThresholdCallbacks.RemoveAt(i);
             }
         }
-        
+
         bool AlreadyDisposed()
         {
             if (_disposed) return true;
@@ -122,6 +117,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
                 Dispose();
                 return true;
             }
+
             return false;
         }
         void Add(ref List<CallbackEntry> list, Action<FluxHandle> callback, bool once)
@@ -192,7 +188,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             Add(ref _disposingCallbacks, callback, once);
             return this;
         }
-        
+
         public FluxObserver Where(Func<FluxHandle, bool> predicate)
         {
             _where = predicate;
@@ -210,7 +206,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
 
             _flux = null;
             _where = null;
-            
+
             _progressChangedCallbacks = null;
             _progressReachedCallbacks = null;
             _forceStoppedCallbacks = null;
@@ -226,10 +222,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
 
     public static class FluxObserverExtensions
     {
-        public static FluxObserver Observe(this FluxScope scope)
-            => new(scope.Flux.GetFlux());
-        public static FluxObserver Observe(this FluxHandle handle)
-            => new(handle.GetFlux());
+        public static FluxObserver Observe(this FluxScope scope) => new(scope.Flux.GetFlux());
+        public static FluxObserver Observe(this FluxHandle handle) => new(handle.GetFlux());
     }
-}
 }
