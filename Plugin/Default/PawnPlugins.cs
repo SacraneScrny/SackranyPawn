@@ -15,8 +15,8 @@ namespace SackranyPawn.Plugin.Default
         public interface IPawnAwaking : IPlugin { public void Execute(Pawn pawn); }
         public interface IPawnInitializing : IPlugin { public void Execute(Pawn pawn); }
         public interface IPawnStarting : IPlugin { public void Execute(Pawn pawn); }
-        public interface IPawnUpdating : IPlugin { public void Execute(Pawn pawn); }
-        public interface IPawnFixedUpdating : IPlugin { public void Execute(Pawn pawn); }
-        public interface IPawnLateUpdating : IPlugin { public void Execute(Pawn pawn); }
+        public interface IPawnUpdating : IPlugin { public void Execute(Pawn pawn, float dt); }
+        public interface IPawnFixedUpdating : IPlugin { public void Execute(Pawn pawn, float dt); }
+        public interface IPawnLateUpdating : IPlugin { public void Execute(Pawn pawn, float dt); }
     }
 }

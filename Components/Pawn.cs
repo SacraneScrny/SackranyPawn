@@ -119,32 +119,35 @@ namespace SackranyPawn.Components
         public void OnUpdate(float dt)
         {
             if (!IsWorking) return;
+            float ldt = dt * TimeFlow;
             
             var plugins = PluginRegistry.Get<PawnPlugins.IPawnUpdating>.Value;
             for (int i = 0; i < plugins.Length; i++)
-                plugins[i].Execute(this);
+                plugins[i].Execute(this, ldt);
             
-            Body.Update(dt * TimeFlow);
+            Body.Update(ldt);
         }
         public void OnFixedUpdate(float dt)
         {
             if (!IsWorking) return;
+            float ldt = dt * TimeFlow;
             
             var plugins = PluginRegistry.Get<PawnPlugins.IPawnFixedUpdating>.Value;
             for (int i = 0; i < plugins.Length; i++)
-                plugins[i].Execute(this);
+                plugins[i].Execute(this,ldt);
 
-            Body.FixedUpdate(dt * TimeFlow);
+            Body.FixedUpdate(ldt);
         }
         public void OnLateUpdate(float dt)
         {
             if (!IsWorking) return;
+            float ldt = dt * TimeFlow;
             
             var plugins = PluginRegistry.Get<PawnPlugins.IPawnLateUpdating>.Value;
             for (int i = 0; i < plugins.Length; i++)
-                plugins[i].Execute(this);
+                plugins[i].Execute(this, ldt);
 
-            Body.LateUpdate(dt * TimeFlow);
+            Body.LateUpdate(ldt);
         }
         #endregion
 

@@ -158,30 +158,35 @@ namespace SackranyPawn.Entities.Modules
             return RemoveInternal(LimbRegistry.GetId(type));
         }
 
+        static readonly HashSet<int> _removeSet = new(8);
+        static readonly List<int> _removeQueue = new(8);
         bool RemoveInternal(int id)
         {
             if (!_limbMap.ContainsKey(id))
                 return false;
-
-            var toRemove = new HashSet<int> { id };
-            var queue = new List<int>(4) { id };
-
-            for (int i = 0; i < queue.Count; i++)
+ 
+            _removeSet.Clear();
+            _removeQueue.Clear();
+ 
+            _removeSet.Add(id);
+            _removeQueue.Add(id);
+ 
+            for (int i = 0; i < _removeQueue.Count; i++)
             {
-                var removingType = LimbRegistry.GetTypeById(queue[i]);
+                var removingType = LimbRegistry.GetTypeById(_removeQueue[i]);
                 foreach (var (limbId, limb) in _limbMap)
                 {
-                    if (toRemove.Contains(limbId)) continue;
+                    if (_removeSet.Contains(limbId)) continue;
                     if (!HasNonOptionalDepOn(limb, removingType)) continue;
-                    toRemove.Add(limbId);
-                    queue.Add(limbId);
+                    _removeSet.Add(limbId);
+                    _removeQueue.Add(limbId);
                 }
             }
-
-            foreach (var removeId in toRemove)
+ 
+            foreach (var removeId in _removeSet)
                 if (_limbMap.TryGetValue(removeId, out var m))
                     RemoveSingle(removeId, m);
-
+ 
             return true;
         }
         static bool HasNonOptionalDepOn(Limb limb, Type removedType)
