@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using SackranyPawn.Cache;
 using SackranyPawn.Components;
@@ -18,7 +17,7 @@ namespace SackranyPawn.Managers
         static readonly Dictionary<PawnArchetype, Dictionary<int, Pawn>> _cachedArchetypes = new();
         static readonly Dictionary<int, Dictionary<int, Pawn>> _cachedTags = new();
         static readonly List<Pawn> _cachedArray = new();
-        
+
         static readonly Dictionary<int, int> _hashToIndex = new();
         static readonly Dictionary<int, PawnHandlers> _handlers = new();
         readonly struct PawnHandlers
@@ -27,11 +26,11 @@ namespace SackranyPawn.Managers
             public readonly Action<int> OnTagRemoved;
             public PawnHandlers(Action<int> onTagAdded, Action<int> onTagRemoved)
             {
-                OnTagAdded   = onTagAdded;
+                OnTagAdded = onTagAdded;
                 OnTagRemoved = onTagRemoved;
             }
         }
-        
+
         public static IReadOnlyList<Pawn> RegisteredPawns => _cachedArray;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -60,18 +59,18 @@ namespace SackranyPawn.Managers
             RegisterTags(unit);
             archetypes.TryAdd(unit.Hash, unit);
             _cachedPawns.Add(unit.Hash, unit);
-            
+
             _hashToIndex[unit.Hash] = _cachedArray.Count;
             _cachedArray.Add(unit);
 
             var handlers = new PawnHandlers(
-                onTagAdded:   id => OnPawnTagAdded(unit, id),
+                onTagAdded: id => OnPawnTagAdded(unit, id),
                 onTagRemoved: id => OnPawnTagRemoved(unit, id)
             );
             _handlers[unit.Hash] = handlers;
-            unit.OnStartWorking    += HandlePawnStarted;
-            unit.Tag.OnTagAdded    += handlers.OnTagAdded;
-            unit.Tag.OnTagRemoved  += handlers.OnTagRemoved;
+            unit.OnStartWorking += HandlePawnStarted;
+            unit.Tag.OnTagAdded += handlers.OnTagAdded;
+            unit.Tag.OnTagRemoved += handlers.OnTagRemoved;
 
             OnPawnRegistered?.Invoke(unit);
             return true;
@@ -115,17 +114,17 @@ namespace SackranyPawn.Managers
 
             UnregisterTeam(unit);
             UnregisterTags(unit);
-            
+
             if (_cachedArchetypes.TryGetValue(unit.Archetype, out var archetypes))
                 archetypes.Remove(unit.Hash);
             _cachedPawns.Remove(unit.Hash);
 
-            int idx  = _hashToIndex[unit.Hash];
+            int idx = _hashToIndex[unit.Hash];
             int last = _cachedArray.Count - 1;
             if (idx != last)
             {
                 var swapped = _cachedArray[last];
-                _cachedArray[idx]       = swapped;
+                _cachedArray[idx] = swapped;
                 _hashToIndex[swapped.Hash] = idx;
             }
             _cachedArray.RemoveAt(last);
@@ -155,21 +154,18 @@ namespace SackranyPawn.Managers
 
         public static bool HasPawns(Func<Pawn, bool> cond)
         {
-            foreach (var unit in _cachedArray)
-                if (cond(unit)) return true;
+            for (int i = 0; i < _cachedArray.Count; i++)
+                if (cond(_cachedArray[i])) return true;
             return false;
         }
         public static bool HasPawnsWithTag<T>() where T : IPawnTag
             => _cachedTags.TryGetValue(TypeRegistry<IPawnTag>.Id<T>.Value, out var b) && b.Count > 0;
 
-        #region GET
+        #region GET SINGLE
         public static Pawn GetPawn(Func<Pawn, bool> cond)
         {
-            for (var i = 0; i < _cachedArray.Count; i++)
-            {
-                var unit = _cachedArray[i];
-                if (cond(unit)) return unit;
-            }
+            for (int i = 0; i < _cachedArray.Count; i++)
+                if (cond(_cachedArray[i])) return _cachedArray[i];
             return null;
         }
         public static Pawn GetPawnWithTag<T>() where T : IPawnTag
@@ -191,12 +187,12 @@ namespace SackranyPawn.Managers
 
         public static bool TryGetPawn(Func<Pawn, bool> cond, out Pawn value)
         {
-            foreach (var unit in _cachedArray)
-                if (cond(unit))
-                {
-                    value = unit;
-                    return true;
-                }
+            for (int i = 0; i < _cachedArray.Count; i++)
+            {
+                if (!cond(_cachedArray[i])) continue;
+                value = _cachedArray[i];
+                return true;
+            }
             value = null;
             return false;
         }
@@ -207,12 +203,12 @@ namespace SackranyPawn.Managers
                 value = null;
                 return false;
             }
-            foreach (var unit in teams)
-                if (cond(unit.Value))
-                {
-                    value = unit.Value;
-                    return true;
-                }
+            foreach (var kvp in teams)
+            {
+                if (!cond(kvp.Value)) continue;
+                value = kvp.Value;
+                return true;
+            }
             value = null;
             return false;
         }
@@ -223,8 +219,13 @@ namespace SackranyPawn.Managers
                 value = null;
                 return false;
             }
-            value = teams.First().Value;
-            return value != null;
+            foreach (var kvp in teams)
+            {
+                value = kvp.Value;
+                return value != null;
+            }
+            value = null;
+            return false;
         }
         public static bool TryGetPawnWithTag<T>(out Pawn value) where T : IPawnTag
         {
@@ -236,76 +237,65 @@ namespace SackranyPawn.Managers
             value = GetPawnWithTag<T>(cond);
             return value != null;
         }
+        #endregion
 
-        public static bool TryGetPawns(Func<Pawn, bool> cond, out Pawn[] value)
-        {
-            value = GetAllPawns(cond).ToArray();
-            return value.Length > 0;
-        }
-        public static bool TryGetPawns(TeamInfo team, Func<Pawn, bool> cond, out Pawn[] value)
-        {
-            value = GetAllPawns(team, cond).ToArray();
-            return value.Length > 0;
-        }
-        public static bool TryGetPawns(TeamInfo team, out Pawn[] value)
-        {
-            value = GetAllPawns(team).ToArray();
-            return value.Length > 0;
-        }
-
-        public static bool TryGetPawns(Func<Pawn, bool> cond, out List<Pawn> value)
-        {
-            value = GetAllPawns(cond).ToList();
-            return value.Count > 0;
-        }
-        public static bool TryGetPawns(TeamInfo team, Func<Pawn, bool> cond, out List<Pawn> value)
-        {
-            value = GetAllPawns(team, cond).ToList();
-            return value.Count > 0;
-        }
-        public static bool TryGetPawns(TeamInfo team, out List<Pawn> value)
-        {
-            value = GetAllPawns(team).ToList();
-            return value.Count > 0;
-        }
-
-        public static bool TryGetPawnsWithTag<T>(out Pawn[] value) where T : IPawnTag
-        {
-            value = GetAllPawnsWithTag<T>().ToArray();
-            return value.Length > 0;
-        }
-        public static bool TryGetPawnsWithTag<T>(Func<Pawn, bool> cond, out Pawn[] value) where T : IPawnTag
-        {
-            value = GetAllPawnsWithTag<T>(cond).ToArray();
-            return value.Length > 0;
-        }
-
+        #region GET ALL
         public static IReadOnlyList<Pawn> GetAllPawns() => _cachedArray;
-        public static IReadOnlyList<Pawn> GetAllPawns(TeamInfo team) => 
-            !_cachedTeams.TryGetValue(team, out var teams)
-                ? Array.Empty<Pawn>()
-                : teams.Select(x => x.Value).ToList().AsReadOnly();
-        public static IEnumerable<Pawn> GetAllPawns(Func<Pawn, bool> cond) => _cachedArray.Where(cond);
-        public static IEnumerable<Pawn> GetAllPawns(TeamInfo team, Func<Pawn, bool> cond) => 
-            !_cachedTeams.TryGetValue(team, out var teams)
-                ? Array.Empty<Pawn>()
-                : teams.Select(x => x.Value).Where(cond);
-        public static IEnumerable<Pawn> GetAllPawns(PawnArchetype archetype) => 
-            _cachedArchetypes.TryGetValue(archetype, out var archetypes)
-                ? archetypes.Select(x => x.Value)
-                : Array.Empty<Pawn>();
 
-        public static IEnumerable<Pawn> GetAllPawnsWithTag<T>() where T : IPawnTag
+        public static int GetAllPawns(List<Pawn> results)
         {
-            int id = TypeRegistry<IPawnTag>.Id<T>.Value;
-            if (!_cachedTags.TryGetValue(id, out var bucket)) return Array.Empty<Pawn>();
-            return bucket.Values.Where(u => u.IsActive);
+            results.Clear();
+            results.AddRange(_cachedArray);
+            return results.Count;
         }
-        public static IEnumerable<Pawn> GetAllPawnsWithTag<T>(Func<Pawn, bool> cond) where T : IPawnTag
+        public static int GetAllPawns(Func<Pawn, bool> cond, List<Pawn> results)
         {
+            results.Clear();
+            for (int i = 0; i < _cachedArray.Count; i++)
+                if (cond(_cachedArray[i])) results.Add(_cachedArray[i]);
+            return results.Count;
+        }
+        public static int GetAllPawns(TeamInfo team, List<Pawn> results)
+        {
+            results.Clear();
+            if (!_cachedTeams.TryGetValue(team, out var teams)) return 0;
+            foreach (var kvp in teams)
+                results.Add(kvp.Value);
+            return results.Count;
+        }
+        public static int GetAllPawns(TeamInfo team, Func<Pawn, bool> cond, List<Pawn> results)
+        {
+            results.Clear();
+            if (!_cachedTeams.TryGetValue(team, out var teams)) return 0;
+            foreach (var kvp in teams)
+                if (cond(kvp.Value)) results.Add(kvp.Value);
+            return results.Count;
+        }
+        public static int GetAllPawns(PawnArchetype archetype, List<Pawn> results)
+        {
+            results.Clear();
+            if (!_cachedArchetypes.TryGetValue(archetype, out var archetypes)) return 0;
+            foreach (var kvp in archetypes)
+                results.Add(kvp.Value);
+            return results.Count;
+        }
+        public static int GetAllPawnsWithTag<T>(List<Pawn> results) where T : IPawnTag
+        {
+            results.Clear();
             int id = TypeRegistry<IPawnTag>.Id<T>.Value;
-            if (!_cachedTags.TryGetValue(id, out var bucket)) return Array.Empty<Pawn>();
-            return bucket.Values.Where(u => u.IsActive && cond(u));
+            if (!_cachedTags.TryGetValue(id, out var bucket)) return 0;
+            foreach (var kvp in bucket)
+                if (kvp.Value.IsActive) results.Add(kvp.Value);
+            return results.Count;
+        }
+        public static int GetAllPawnsWithTag<T>(Func<Pawn, bool> cond, List<Pawn> results) where T : IPawnTag
+        {
+            results.Clear();
+            int id = TypeRegistry<IPawnTag>.Id<T>.Value;
+            if (!_cachedTags.TryGetValue(id, out var bucket)) return 0;
+            foreach (var kvp in bucket)
+                if (kvp.Value.IsActive && cond(kvp.Value)) results.Add(kvp.Value);
+            return results.Count;
         }
         #endregion
 

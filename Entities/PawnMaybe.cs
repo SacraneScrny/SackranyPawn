@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 using Cysharp.Threading.Tasks;
@@ -104,12 +105,13 @@ namespace SackranyPawn.Entities
             var pawn = PawnRegister.GetPawn(u => u.IsActive && u.Has<TLimb>() && predicate(u));
             return pawn.Maybe(action);
         }
-        public static int MaybeAll<TLimb>(Func<Pawn, bool> predicate, Action<TLimb> action)
+        public static int MaybeAll<TLimb>(Func<Pawn, bool> predicate, Action<TLimb> action, List<Pawn> results = null)
             where TLimb : Limb
         {
+            results ??= new List<Pawn>();
             int count = 0;
-            foreach (var pawn in PawnRegister.GetAllPawns(
-                         u => u.IsActive && u.Has<TLimb>() && predicate(u)))
+            PawnRegister.GetAllPawns(u => u.IsActive && u.Has<TLimb>() && predicate(u), results);
+            foreach (var pawn in results)
                 if (pawn.Maybe(action))
                     count++;
             return count;

@@ -16,7 +16,7 @@ namespace SackranyPawn.Traits.Fluxes
     {
         [SerializeField] [SerializeReference] [SubclassSelector] List<Flux> Fluxes;
         
-        readonly Dictionary<int, int> _fluxIndex = new();
+        readonly Dictionary<Flux, int> _fluxIndex = new();
         readonly Dictionary<int, HashSet<FluxHandle>> _fluxesByIds = new();
         
         public float CachedDeltaTime { get; private set; }
@@ -121,7 +121,7 @@ namespace SackranyPawn.Traits.Fluxes
                 _fluxesByIds.Add(flux.Id, fluxes);
             }
             fluxes.Add(flux);
-            _fluxIndex[RuntimeHelpers.GetHashCode(flux) ] = Fluxes.Count;
+            _fluxIndex[flux] = Fluxes.Count;
         }
         void RemoveFromCacheInternal(Flux flux)
         {
@@ -138,19 +138,18 @@ namespace SackranyPawn.Traits.Fluxes
         {
             if (flux == null) return false;
             RemoveFromCacheInternal(flux);
-
-            int key = RuntimeHelpers.GetHashCode(flux) ;
-            if (!_fluxIndex.TryGetValue(key, out int idx)) return false;
+            
+            if (!_fluxIndex.TryGetValue(flux, out int idx)) return false;
 
             int last = Fluxes.Count - 1;
             if (idx != last)
             {
                 var swapped = Fluxes[last];
                 Fluxes[idx] = swapped;
-                _fluxIndex[RuntimeHelpers.GetHashCode(swapped) ] = idx;
+                _fluxIndex[swapped] = idx;
             }
             Fluxes.RemoveAt(last);
-            _fluxIndex.Remove(key);
+            _fluxIndex.Remove(flux);
 
             FluxRemoved?.Invoke(flux);
             flux.Dispose();

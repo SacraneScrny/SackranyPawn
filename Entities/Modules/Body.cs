@@ -16,24 +16,24 @@ namespace SackranyPawn.Entities.Modules
     {
         public BodyMode Mode = BodyMode.Dynamic;
         bool IsDynamic => Mode == BodyMode.Dynamic;
-        
-        [SerializeField][SerializeReference][SubclassSelector] 
+
+        [SerializeField][SerializeReference][SubclassSelector]
         List<Limb> Limbs = new(){ new StatHandler(), new ConditionHandler() };
-        
+
         public bool IsStarted { get; private set; }
         public bool IsDisposed { get; private set; }
         public IReadOnlyList<Limb> GetLimbs() => Limbs;
-        
+
         public void Start()
         {
             if (IsStarted) return;
             IsStarted = true;
-                
+
             Add(Limbs.ToArray(), false);
         }
 
         #region LIMBS
-        readonly Dictionary<int, Limb> _limbMap = new ();
+        readonly Dictionary<int, Limb> _limbMap = new();
 
         public bool TryAdd(Limb limb, out Limb result, bool asTemp = true)
         {
@@ -94,12 +94,12 @@ namespace SackranyPawn.Entities.Modules
                     if (DependencyCheck(tempLimbs[i].limb)) continue;
                     dependenciesSolved = false;
                     RemoveInternal(tempLimbs[i].id);
-                    tempLimbs.RemoveAt(i);  
-                    
+                    tempLimbs.RemoveAt(i);
+
                     for (int j = tempLimbs.Count - 1; j >= 0; j--)
                         if (!_limbMap.ContainsKey(tempLimbs[j].id))
                             tempLimbs.RemoveAt(j);
-                    
+
                     allAdded = false;
                 }
             }
@@ -115,7 +115,7 @@ namespace SackranyPawn.Entities.Modules
 
             return allAdded;
         }
-        
+
         bool CreateAndRegister(Limb limb, out Limb instance)
         {
             var id = LimbRegistry.GetId(limb.GetType());
@@ -140,7 +140,7 @@ namespace SackranyPawn.Entities.Modules
             instance.Start();
             LimbAdded?.Invoke(instance);
         }
-        
+
         public bool Remove<T>() where T : Limb
         {
             if (!IsDynamic) return false;
@@ -157,7 +157,7 @@ namespace SackranyPawn.Entities.Modules
             if (!IsDynamic) return false;
             return RemoveInternal(LimbRegistry.GetId(type));
         }
-        
+
         bool RemoveInternal(int id)
         {
             if (!_limbMap.ContainsKey(id))
@@ -224,7 +224,7 @@ namespace SackranyPawn.Entities.Modules
             _limbMap.Clear();
             Limbs.Clear();
         }
-        
+
         public bool Has<T>(bool tryAssignable = false) where T : Limb
         {
             if (_limbMap.ContainsKey(LimbRegistry.GetId<T>())) return true;
@@ -237,7 +237,7 @@ namespace SackranyPawn.Entities.Modules
             if (tryAssignable) return GetAssignable(type) != null;
             return false;
         }
-        
+
         public T Get<T>() where T : Limb
         {
             if (_limbMap.TryGetValue(LimbRegistry.GetId<T>(), out var instance))
@@ -250,7 +250,7 @@ namespace SackranyPawn.Entities.Modules
                 return instance;
             return GetAssignable(type);
         }
-        
+
         public T GetAssignable<T>() where T : Limb
         {
             foreach (var module in _limbMap.Values)
@@ -265,23 +265,19 @@ namespace SackranyPawn.Entities.Modules
                     return module;
             return null;
         }
-        public Limb[] GetAllAssignable(Type type)
+        public void GetAllAssignable(Type type, List<object> results)
         {
-            var modules = new List<Limb>();
             foreach (var module in _limbMap.Values)
                 if (type.IsAssignableFrom(module.GetType()))
-                    modules.Add(module);
-            return modules.ToArray();
+                    results.Add(module);
         }
-        public Component[] GetAllAssignableComponents(Type type)
+        public void GetAllAssignableComponents(Type type, List<object> results)
         {
-            var ret = new List<Component>();
             foreach (var comp in Pawn.GetComponentsInChildren(type))
                 if (comp != null)
-                    ret.Add(comp);
-            return ret.ToArray();
+                    results.Add(comp);
         }
-        
+
         public bool TryGet<T>(out T result, bool tryAssignable = false) where T : Limb
         {
             if (_limbMap.TryGetValue(LimbRegistry.GetId<T>(), out var module))
@@ -343,10 +339,10 @@ namespace SackranyPawn.Entities.Modules
         bool DependencyCheck(Limb m) => DependencyInjector.InjectDependencies(m, this) && m.OnDependencyCheck();
         #endregion
 
-        #region UPDATE 
-        readonly List<IUpdateLimb> _updateModules = new ();
-        readonly List<IFixedUpdateLimb> _fixedUpdateModules = new ();
-        readonly List<ILateUpdateLimb> _lateUpdateModules = new ();
+        #region UPDATE
+        readonly List<IUpdateLimb> _updateModules = new();
+        readonly List<IFixedUpdateLimb> _fixedUpdateModules = new();
+        readonly List<ILateUpdateLimb> _lateUpdateModules = new();
 
         public void Update(float deltaTime)
         {
@@ -367,19 +363,24 @@ namespace SackranyPawn.Entities.Modules
                 _lateUpdateModules[i].OnLateUpdate(deltaTime);
         }
         #endregion
-        
+
+        static readonly List<Limb> _resetBuffer = new(8);
+
         public void Reset()
         {
             if (!IsStarted) return;
             if (IsDisposed) return;
-            
-            var _toRemove = Limbs.Where(x => x.IsTemporary).ToArray();
-            foreach (var limb in _toRemove)
-                Remove(limb);
-            
+
+            _resetBuffer.Clear();
+            for (int i = 0; i < Limbs.Count; i++)
+                if (Limbs[i].IsTemporary) _resetBuffer.Add(Limbs[i]);
+            for (int i = 0; i < _resetBuffer.Count; i++)
+                Remove(_resetBuffer[i]);
+            _resetBuffer.Clear();
+
             foreach (var module in _limbMap.Values)
                 module.Reset();
-            
+
             LimbsReseted?.Invoke();
             foreach (var module in _limbMap.Values)
                 module.Start();
@@ -397,7 +398,7 @@ namespace SackranyPawn.Entities.Modules
             LimbsReseted = null;
             IsDisposed = true;
         }
-        
+
         public event Action<Limb> LimbAdded;
         public event Action LimbsReseted;
         public event Action<Limb> TriedToAddAlreadyExist;

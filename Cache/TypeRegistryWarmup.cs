@@ -5,7 +5,6 @@ using System.Reflection;
 using SackranyPawn.Entities;
 using SackranyPawn.Entities.Modules;
 using SackranyPawn.Traits.Conditions;
-using SackranyPawn.Traits.Effects;
 using SackranyPawn.Traits.Fluxes.Entities;
 using SackranyPawn.Traits.PawnEvents;
 using SackranyPawn.Traits.PawnTags;

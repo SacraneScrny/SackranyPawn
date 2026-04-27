@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using SackranyPawn.Entities.Modules;
 
@@ -8,10 +9,8 @@ namespace SackranyPawn.Cache
 {
     public static class DependencyInjector
     {
-        public static bool Inject(object target, Body body)
-        {
-            return InjectDependencies(target, body);
-        }
+        static readonly List<object> _buffer = new(16);
+        
         public static bool InjectDependencies(object target, Body body)
         {
             var meta = LimbReflectionCache.GetMetadata(target.GetType());
@@ -20,21 +19,21 @@ namespace SackranyPawn.Cache
             {
                 if (dep.IsArray)
                 {
-                    object[] found = body.GetAllAssignable(dep.ElementType);
-                    if ((found == null || found.Length == 0))
-                    {
-                        found = body.GetAllAssignableComponents(dep.ElementType);
-                    }
+                    _buffer.Clear();
+                    body.GetAllAssignable(dep.ElementType, _buffer);
 
-                    if ((found == null || found.Length == 0) && !dep.IsOptional)
+                    if (_buffer.Count == 0)
+                        body.GetAllAssignableComponents(dep.ElementType, _buffer);
+
+                    if (_buffer.Count == 0 && !dep.IsOptional)
                         return false;
 
-                    var array = Array.CreateInstance(dep.ElementType, found.Length);
-                    for (int i = 0; i < found.Length; i++)
+                    var array = Array.CreateInstance(dep.ElementType, _buffer.Count);
+                    for (int i = 0; i < _buffer.Count; i++)
                     {
-                        if (!dep.ElementType.IsInstanceOfType(found[i]))
+                        if (!dep.ElementType.IsInstanceOfType(_buffer[i]))
                             continue;
-                        array.SetValue(found[i], i);
+                        array.SetValue(_buffer[i], i);
                     }
 
                     dep.Field.SetValue(target, array);
