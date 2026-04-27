@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Cache
 {
-    public static class HashBuilder
+    internal static class HashBuilder
     {
         public static uint Begin() => 2166136261u; // FNV-1a offset
 

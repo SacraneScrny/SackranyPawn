@@ -3,7 +3,7 @@ using SackranyPawn.Entities.Modules;
 
 namespace SackranyPawn.Cache
 {
-    public static class LimbRegistry
+    internal static class LimbRegistry
     {
         public static int Count => TypeRegistry<Limb>.Count;
         public static int GetId<T>() where T : Limb => TypeRegistry<Limb>.Id<T>.Value;

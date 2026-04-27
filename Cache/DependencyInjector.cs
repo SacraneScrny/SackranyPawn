@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Cache
 {
-    public static class DependencyInjector
+    internal static class DependencyInjector
     {
         static readonly List<object> _buffer = new(16);
         

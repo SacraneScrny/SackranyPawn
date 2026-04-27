@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Cache
 {
-    public static class TypeRegistryWarmup
+    internal static class TypeRegistryWarmup
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Warmup()

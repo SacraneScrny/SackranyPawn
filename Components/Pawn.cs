@@ -7,6 +7,8 @@ using SackranyPawn.Cache;
 using SackranyPawn.Entities;
 using SackranyPawn.Entities.Modules;
 using SackranyPawn.Managers;
+using SackranyPawn.Plugin.Cache;
+using SackranyPawn.Plugin.Default;
 using SackranyPawn.Traits.PawnEvents;
 using SackranyPawn.Traits.PawnTags;
 
@@ -48,6 +50,9 @@ namespace SackranyPawn.Components
         
         void Awake()
         {
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnAwaking>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
             Initialize();
             if (WorkByDefault)
             {
@@ -57,6 +62,10 @@ namespace SackranyPawn.Components
         public void Initialize()
         {
             if (_isInitialized) return;
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnInitializing>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             Application.quitting += OnApplicationQuitting;
             
             Hash = PawnHash.GetId();
@@ -78,6 +87,9 @@ namespace SackranyPawn.Components
         void OnApplicationQuitting() => _isQuitting = true;
         void Start()
         {
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnStarting>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
             if (IsWorking)
                 Body.Start();
         }
@@ -107,16 +119,31 @@ namespace SackranyPawn.Components
         public void OnUpdate(float dt)
         {
             if (!IsWorking) return;
+            
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnUpdating>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             Body.Update(dt * TimeFlow);
         }
         public void OnFixedUpdate(float dt)
         {
             if (!IsWorking) return;
+            
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnFixedUpdating>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+
             Body.FixedUpdate(dt * TimeFlow);
         }
         public void OnLateUpdate(float dt)
         {
             if (!IsWorking) return;
+            
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnLateUpdating>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+
             Body.LateUpdate(dt * TimeFlow);
         }
         #endregion
@@ -135,10 +162,19 @@ namespace SackranyPawn.Components
             IsWorking = true;
             PawnRegister.RegisterPawn(this);
             OnStartWorking?.Invoke(this);
+            
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnStartWorking>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
         }
         public void StopWork()
         {
             if (!IsWorking) return;
+            
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnStopWorking>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             PawnRegister.UnregisterPawn(this);
             OnStopWorking?.Invoke(this);
             IsWorking = false;
@@ -147,6 +183,11 @@ namespace SackranyPawn.Components
         public void ResetPawn()
         {
             if (!Application.isPlaying) return;
+            
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnResetting>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             OnReset?.Invoke(this);
             Tag.Reset();
             Event.Reset();
@@ -156,12 +197,20 @@ namespace SackranyPawn.Components
         
         public void OnPopped()
         {
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnPopping>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             gameObject.SetActive(true);
             ResetPawn();
             if (WorkByDefault) StartWork();
         }
         public void OnPushed()
         {
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnPushing>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             StopWork();
             gameObject.SetActive(false);
         }
@@ -215,6 +264,10 @@ namespace SackranyPawn.Components
         void OnDestroy()
         {
             if (_isQuitting) return;
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnDestroying>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+            
             Body.Dispose();
             PawnRegister.UnregisterPawn(this);
             Application.quitting -= OnApplicationQuitting;

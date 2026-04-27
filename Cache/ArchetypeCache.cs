@@ -7,7 +7,7 @@ using SackranyPawn.Components;
 
 namespace SackranyPawn.Cache
 {
-    static class ArchetypeCache
+    internal static class ArchetypeCache
     {
         static readonly Dictionary<Type, FieldInfo> _controllerFields = new();
         static readonly Dictionary<Type, FieldInfo> _defaultFields = new();

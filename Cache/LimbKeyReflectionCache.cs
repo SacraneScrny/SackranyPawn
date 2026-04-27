@@ -6,7 +6,7 @@ using SackranyPawn.Entities.Modules;
 
 namespace SackranyPawn.Cache
 {
-    public static class LimbKeyReflectionCache
+    internal static class LimbKeyReflectionCache
     {
         static readonly Dictionary<Type, HashKeyField[]> _cache = new();
 

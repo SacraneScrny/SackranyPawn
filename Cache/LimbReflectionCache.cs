@@ -7,7 +7,7 @@ using SackranyPawn.Entities.Modules;
 
 namespace SackranyPawn.Cache
 {
-    public static class LimbReflectionCache
+    internal static class LimbReflectionCache
     {
         public readonly struct LimbMetadata
         {

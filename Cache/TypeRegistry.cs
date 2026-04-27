@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SackranyPawn.Cache
 {
-    public static class TypeRegistry<TBase> where TBase : class
+    internal static class TypeRegistry<TBase> where TBase : class
     {
         static readonly Dictionary<Type, int> _typeToId = new();
         static readonly List<Type> _idToType = new();
