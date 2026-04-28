@@ -189,18 +189,19 @@ namespace SackranyPawn.Plugin.Cache
         public static class Get<T>
         {
             public static T[] Value = Array.Empty<T>();
+            public static bool HasAny => Value.Length > 0;
 
             static Get()
             {
-                Action refresh = static () =>
+                static void Refresh()
                 {
                     Value = _map.TryGetValue(typeof(T), out var list)
                         ? ((List<T>)list).ToArray()
                         : Array.Empty<T>();
-                };
+                }
 
-                _refreshers.Add(refresh);
-                refresh();
+                _refreshers.Add(Refresh);
+                Refresh();
             }
         }
     }

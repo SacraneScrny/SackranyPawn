@@ -17,14 +17,29 @@ namespace SackranyPawn.Cache
         public static uint BuildFromTemplates(IEnumerable<object> templates)
         {
             uint hash = Begin();
-            foreach (var t in templates.OrderBy(t => t.GetType().FullName))
+
+            var list = new List<object>();
+            foreach (var t in templates)
+                list.Add(t);
+
+            list.Sort((a, b) => string.Compare(
+                a.GetType().FullName,
+                b.GetType().FullName,
+                StringComparison.Ordinal));
+
+            foreach (var t in list)
             {
                 var type = t.GetType();
                 hash = AddString(hash, type.FullName);
 
-                foreach (var hk in LimbKeyReflectionCache.GetHashKeys(type))
+                var keys = LimbKeyReflectionCache.GetHashKeys(type);
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    var hk = keys[i];
                     hash = AddValue(hash, hk.Field.GetValue(t), hk.Attr);
+                }
             }
+
             return hash;
         }
         static uint AddValue(uint hash, object value, HashKeyAttribute attr)

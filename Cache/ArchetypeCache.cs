@@ -25,6 +25,7 @@ namespace SackranyPawn.Cache
             {
                 fi = unitType.GetField("Body",
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (fi == null) throw new NullReferenceException("No Body in Pawn");
                 _controllerFields[unitType] = fi;
             }
             return fi?.GetValue(pawn);
@@ -38,6 +39,7 @@ namespace SackranyPawn.Cache
             {
                 fi = controllerType.GetField("Limbs",
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (fi == null) throw new NullReferenceException("No Limbs in Body");
                 _defaultFields[controllerType] = fi;
             }
 

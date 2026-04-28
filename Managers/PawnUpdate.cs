@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 
 using SackranyPawn.Components;
+using SackranyPawn.Plugin.Cache;
+using SackranyPawn.Plugin.Default;
 
 using UnityEngine;
 using UnityEngine.LowLevel;
@@ -113,27 +115,54 @@ namespace SackranyPawn.Managers
         static void Tick()
         {
             float dt = Time.deltaTime * PawnTimeflow.CurrentTimeFlow;
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnUpdating>.Value;
+            var hasAnyPlugins = PluginRegistry.Get<PawnPlugins.IPawnUpdating>.HasAny;
+            
             _isUpdating = true;
             for (int i = 0; i < _localPawns.Count; i++)
+            {
+                if (hasAnyPlugins)
+                    for (int p = 0; p < plugins.Length; p++)
+                        plugins[p].Execute(_localPawns[i], dt);
+                
                 _localPawns[i].OnUpdate(dt);
+            }
             _isUpdating = false;
             FlushPending();
         }
         static void FixedTick()
         {
             float dt = Time.fixedDeltaTime * PawnTimeflow.CurrentTimeFlow;
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnFixedUpdating>.Value;
+            var hasAnyPlugins = PluginRegistry.Get<PawnPlugins.IPawnFixedUpdating>.HasAny;
+            
             _isUpdating = true;
             for (int i = 0; i < _localPawns.Count; i++)
+            {
+                if (hasAnyPlugins)
+                    for (int p = 0; p < plugins.Length; p++)
+                        plugins[p].Execute(_localPawns[i], dt);
+                
                 _localPawns[i].OnFixedUpdate(dt);
+            }
             _isUpdating = false;
             FlushPending();
         }
         static void LateTick()
         {
             float dt = Time.deltaTime * PawnTimeflow.CurrentTimeFlow;
+            var plugins = PluginRegistry.Get<PawnPlugins.IPawnLateUpdating>.Value;
+            var hasAnyPlugins = PluginRegistry.Get<PawnPlugins.IPawnLateUpdating>.HasAny;
+            
             _isUpdating = true;
             for (int i = 0; i < _localPawns.Count; i++)
+            {
+                if (hasAnyPlugins)
+                    for (int p = 0; p < plugins.Length; p++)
+                        plugins[p].Execute(_localPawns[i], dt);
+                
                 _localPawns[i].OnLateUpdate(dt);
+            }
             _isUpdating = false;
             FlushPending();
         }

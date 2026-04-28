@@ -116,6 +116,7 @@ namespace SackranyPawn.Managers
                 if (p != null) Object.Destroy(p.gameObject);
             }
             _templates.Remove(archetype);
+            _pawnPool.Remove(archetype);
         }
         public static void ClearAll()
         {
