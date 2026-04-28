@@ -54,10 +54,6 @@ namespace SackranyPawn.Cache
 
             foreach (var type in found)
                 TypeRegistry<TBase>.GetOrRegister(type);
-
-            #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log($"[TypeRegistryWarmup] {typeof(TBase).Name}: {found.Count} types registered.");
-            #endif
         }
 
         static void CollectFromAssembly(Assembly assembly, Type baseType, List<Type> found)
@@ -69,7 +65,6 @@ namespace SackranyPawn.Cache
             }
             catch (ReflectionTypeLoadException e)
             {
-                // Partial load — use whatever resolved before the failure.
                 types = e.Types;
             }
 

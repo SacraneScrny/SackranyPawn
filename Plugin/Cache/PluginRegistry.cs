@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace SackranyPawn.Plugin.Cache
 {
-    internal static class PluginRegistry
+    public static class PluginRegistry
     {
         static readonly Dictionary<Type, object> _map = new();
         static readonly List<Action> _refreshers = new();
