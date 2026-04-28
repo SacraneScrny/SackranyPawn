@@ -6,6 +6,8 @@ using Cysharp.Threading.Tasks;
 
 using R3;
 
+using SackranyPawn.Plugin.Cache;
+using SackranyPawn.Plugin.Default;
 using SackranyPawn.Traits.Fluxes.Cache;
 
 using UnityEngine;
@@ -20,53 +22,51 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         ReadOnlyReactiveProperty<int> Amount { get; }
         ReadOnlyReactiveProperty<float> Progress { get; }
         CancellationToken Token { get; }
-        
+
         bool ChangeAmount(int diff);
         bool IncreaseAmount(int value = 1) => ChangeAmount(Mathf.Abs(value));
         bool DecreaseAmount(int value = 1) => ChangeAmount(-Mathf.Abs(value));
-        
+
         void ForceStop();
 
         internal Flux GetFlux();
     }
-    
+
     [Serializable]
-    public abstract class Flux : FluxHandle, ICloneable, IDisposable 
+    public abstract class Flux : FluxHandle, ICloneable, IDisposable
     {
         #if UNITY_EDITOR
         public int DebugAmount;
         public float DebugProgress;
         #endif
-        
+
         public abstract int Id { get; }
         public bool IsDisposed { get; private set; }
         public bool IsStarted { get; private set; }
 
         ReactiveProperty<int> _amount;
         ReactiveProperty<float> _progress;
-        
+
         public ReadOnlyReactiveProperty<int> Amount { get; private set; }
         public ReadOnlyReactiveProperty<float> Progress { get; private set; }
-        
+
         protected FluxHandler Handler { get; private set; }
         protected float DeltaTime => Handler.CachedDeltaTime;
         protected float FixedDeltaTime => Handler.CachedFixedDeltaTime;
-        
+
         CancellationTokenSource _localCts;
         public CancellationToken Token { get; private set; }
 
         CompositeDisposable _disposables;
-        
-        public void Initialize(
-            FluxHandler handler, 
-            int amount)
+
+        public void Initialize(FluxHandler handler, int amount)
         {
             _disposables = new();
             Handler = handler;
-            
+
             _amount = new(amount);
             _progress = new(0);
-            
+
             _localCts = new CancellationTokenSource();
             var linked = CancellationTokenSource.CreateLinkedTokenSource(
                 handler.ModuleToken,
@@ -74,7 +74,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             );
             Token = linked.Token;
             _disposables.Add(linked);
-            
+
             _disposables.Add(_localCts);
             _disposables.Add(_amount);
             _disposables.Add(_progress);
@@ -83,24 +83,36 @@ namespace SackranyPawn.Traits.Fluxes.Entities
             Progress = _progress.ToReadOnlyReactiveProperty();
             _disposables.Add(Amount);
             _disposables.Add(Progress);
-            
+
             #if UNITY_EDITOR
             _disposables.Add(Amount.Subscribe(x => DebugAmount = x));
             _disposables.Add(Progress.Subscribe(x => DebugProgress = x));
             #endif
         }
+
         public void Start()
         {
             if (IsDisposed) return;
             if (IsStarted) return;
+
+            var plugins = PluginRegistry.Get<FluxPlugins.IFluxStarting>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+
             OnStart();
             IsStarted = true;
         }
         protected abstract void OnStart();
+
         public void ForceStop()
         {
             if (IsDisposed) return;
             if (!IsStarted) return;
+
+            var plugins = PluginRegistry.Get<FluxPlugins.IFluxForceStopping>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+
             OnForceStop();
             StateChanged?.Invoke(this, FluxState.ForceStopped);
             Handler.RemoveFlux(this);
@@ -136,18 +148,18 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         {
             if (IsDisposed) return false;
             if (!IsStarted) return false;
-            
+
             if (diff == 0) return false;
             if (_amount.Value == 0) return false;
             OnAmountChangesCome(ref diff);
             if (diff == 0) return false;
-            
+
             diff -= Mathf.Min(_amount.Value + diff, 0);
             _amount.Value += diff;
-            
+
             OnAmountChanged(diff);
             StateChanged?.Invoke(this, FluxState.AmountChanged);
-            
+
             if (diff < 0)
             {
                 OnAmountDecreased(Mathf.Abs(diff));
@@ -189,26 +201,31 @@ namespace SackranyPawn.Traits.Fluxes.Entities
                 Debug.LogException(e);
             }
         }
-        
+
         public void Dispose()
         {
             if (IsDisposed) return;
+
+            var plugins = PluginRegistry.Get<FluxPlugins.IFluxDisposing>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+
             StateChanged?.Invoke(this, FluxState.Disposing);
             OnDisposing();
-            
+
             _localCts?.Cancel();
-            
+
             IsDisposed = true;
             IsStarted = false;
             StateChanged = null;
-            
+
             _disposables?.Dispose();
             _disposables?.Clear();
         }
-        
+
         protected virtual void OnDisposing() { }
         protected void Track(IDisposable disposable) => _disposables.Add(disposable);
-        
+
         public object Clone()
         {
             var clone = (Flux)MemberwiseClone();
@@ -220,13 +237,13 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         internal event Action<Flux, FluxState> StateChanged;
         Flux FluxHandle.GetFlux() => this;
     }
-    
+
     [Serializable]
-    public abstract class Flux<TSelf> : Flux 
+    public abstract class Flux<TSelf> : Flux
         where TSelf : Flux<TSelf>
     {
         public sealed override int Id => FluxRegistry.GetId<TSelf>();
-        
+
         protected sealed override void OnClone(Flux clone) => OnClone((TSelf)clone);
         protected virtual void OnClone(TSelf clone) { }
     }

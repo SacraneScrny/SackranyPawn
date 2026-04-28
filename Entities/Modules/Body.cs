@@ -4,6 +4,8 @@ using System.Linq;
 
 using SackranyPawn.Cache;
 using SackranyPawn.Entities.Modules.ModuleComposition;
+using SackranyPawn.Plugin.Cache;
+using SackranyPawn.Plugin.Default;
 using SackranyPawn.Traits.Conditions;
 using SackranyPawn.Traits.Stats;
 
@@ -28,6 +30,10 @@ namespace SackranyPawn.Entities.Modules
         {
             if (IsStarted) return;
             IsStarted = true;
+
+            var plugins = PluginRegistry.Get<BodyPlugins.IBodyStarting>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
 
             Add(Limbs.ToArray(), false);
         }
@@ -139,6 +145,10 @@ namespace SackranyPawn.Entities.Modules
             if (instance is ILateUpdateLimb l) _lateUpdateModules.Add(l);
             instance.Start();
             LimbAdded?.Invoke(instance);
+
+            var plugins = PluginRegistry.Get<BodyPlugins.IBodyLimbAdded>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this, instance);
         }
 
         public bool Remove<T>() where T : Limb
@@ -158,19 +168,19 @@ namespace SackranyPawn.Entities.Modules
             return RemoveInternal(LimbRegistry.GetId(type));
         }
 
-        static readonly HashSet<int> _removeSet = new(8);
-        static readonly List<int> _removeQueue = new(8);
+        readonly HashSet<int> _removeSet = new(8);
+        readonly List<int> _removeQueue = new(8);
         bool RemoveInternal(int id)
         {
             if (!_limbMap.ContainsKey(id))
                 return false;
- 
+
             _removeSet.Clear();
             _removeQueue.Clear();
- 
+
             _removeSet.Add(id);
             _removeQueue.Add(id);
- 
+
             for (int i = 0; i < _removeQueue.Count; i++)
             {
                 var removingType = LimbRegistry.GetTypeById(_removeQueue[i]);
@@ -182,11 +192,11 @@ namespace SackranyPawn.Entities.Modules
                     _removeQueue.Add(limbId);
                 }
             }
- 
+
             foreach (var removeId in _removeSet)
                 if (_limbMap.TryGetValue(removeId, out var m))
                     RemoveSingle(removeId, m);
- 
+
             return true;
         }
         static bool HasNonOptionalDepOn(Limb limb, Type removedType)
@@ -210,6 +220,11 @@ namespace SackranyPawn.Entities.Modules
             Limbs.Remove(instance);
             if (instance.IsStarted)
                 LimbRemoved?.Invoke(instance);
+
+            var plugins = PluginRegistry.Get<BodyPlugins.IBodyLimbRemoved>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this, instance);
+
             instance.Dispose();
         }
 
@@ -369,12 +384,16 @@ namespace SackranyPawn.Entities.Modules
         }
         #endregion
 
-        static readonly List<Limb> _resetBuffer = new(8);
+        readonly List<Limb> _resetBuffer = new(8);
 
         public void Reset()
         {
             if (!IsStarted) return;
             if (IsDisposed) return;
+
+            var plugins = PluginRegistry.Get<BodyPlugins.IBodyResetting>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
 
             _resetBuffer.Clear();
             for (int i = 0; i < Limbs.Count; i++)
@@ -393,6 +412,11 @@ namespace SackranyPawn.Entities.Modules
         public void Dispose()
         {
             if (IsDisposed) return;
+
+            var plugins = PluginRegistry.Get<BodyPlugins.IBodyDisposing>.Value;
+            for (int i = 0; i < plugins.Length; i++)
+                plugins[i].Execute(this);
+
             foreach (var limb in _limbMap.Values)
                 limb.Dispose();
             Limbs.Clear();
