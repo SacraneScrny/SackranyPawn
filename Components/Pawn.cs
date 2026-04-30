@@ -90,7 +90,8 @@ namespace SackranyPawn.Components
             var plugins = PluginRegistry.Get<PawnPlugins.IPawnStarting>.Value;
             for (int i = 0; i < plugins.Length; i++)
                 plugins[i].Execute(this);
-            if (IsWorking)
+            
+            if (IsWorking && !Body.IsStarted)
                 Body.Start();
         }
 
@@ -194,7 +195,13 @@ namespace SackranyPawn.Components
             
             gameObject.SetActive(true);
             ResetPawn();
-            if (WorkByDefault) StartWork();
+            if (WorkByDefault)
+            {
+                StartWork();
+                
+                if (!Body.IsStarted)
+                    Body.Start();
+            }
         }
         public void OnPushed()
         {
