@@ -2,6 +2,7 @@
 {
     public interface ILateUpdateLimb
     {
-        public void OnLateUpdate(float deltaTime);
+        bool IsEnabled { get; }
+        void OnLateUpdate(float deltaTime);
     }
 }

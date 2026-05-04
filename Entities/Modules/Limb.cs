@@ -9,13 +9,29 @@ namespace SackranyPawn.Entities.Modules
     [Serializable]
     public abstract class Limb : PawnBase, IDisposable
     {
-        public bool IsTemporary { get; private set; }
+        [UnityEngine.SerializeField] bool _isEnabled = true;
+        public bool IsEnabled => _isEnabled;
 
+        public bool IsTemporary { get; private set; }
         public bool IsAwaken { get; private set; }
         public bool IsStarted { get; private set; }
         public bool IsDisposed { get; private set; }
 
         public void MarkTemporary() => IsTemporary = true;
+
+        public void Enable()
+        {
+            if (_isEnabled) return;
+            _isEnabled = true;
+            OnEnable();
+        }
+        public void Disable()
+        {
+            if (!_isEnabled) return;
+            _isEnabled = false;
+            OnDisable();
+        }
+
         public void Awake()
         {
             if (IsAwaken) return;
@@ -101,8 +117,7 @@ namespace SackranyPawn.Entities.Modules
         public bool TryGet<T>(out T result) where T : Limb => Body.TryGet(out result);
         public bool TryGet(Type type, out Limb result) => Body.TryGet(type, out result);
 
-        public bool IsInitialized()
-            => IsStarted && !IsDisposed;
+        public bool IsInitialized() => IsStarted && !IsDisposed;
 
         public virtual void OnDrawGizmos() { }
 
@@ -116,6 +131,8 @@ namespace SackranyPawn.Entities.Modules
         protected virtual void OnReset() { }
         protected virtual void OnDispose() { }
         protected virtual void OnDisposeBeforeAwaken() { }
+        protected virtual void OnEnable() { }
+        protected virtual void OnDisable() { }
     }
 
     [Serializable]

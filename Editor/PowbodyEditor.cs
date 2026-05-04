@@ -175,8 +175,9 @@ namespace SackranyPawn.Editor
             };
         }
 
-        readonly Dictionary<int, bool> _foldouts = new();
         readonly Dictionary<int, bool> _debugModes = new();
+
+        string _foldKey;
 
         SerializedProperty _bodyProp;
         SerializedProperty _limbsProp;
@@ -184,12 +185,15 @@ namespace SackranyPawn.Editor
 
         void OnEnable()
         {
-            _foldouts.Clear();
             _debugModes.Clear();
+            _foldKey = $"SP_Fold_{GlobalObjectId.GetGlobalObjectIdSlow(target)}";
             _bodyProp = serializedObject.FindProperty("Body");
             _limbsProp = _bodyProp?.FindPropertyRelative("Limbs");
             _modeProp = _bodyProp?.FindPropertyRelative("Mode");
         }
+
+        bool GetFoldout(int idx) => EditorPrefs.GetBool($"{_foldKey}_{idx}", false);
+        void SetFoldout(int idx, bool value) => EditorPrefs.SetBool($"{_foldKey}_{idx}", value);
 
         public override void OnInspectorGUI()
         {
@@ -234,7 +238,7 @@ namespace SackranyPawn.Editor
                 var cmd = DrawLimb(i, analysis, pawn);
                 if (cmd == LimbCmd.Remove) removeAt = i;
                 else if (cmd == LimbCmd.MoveUp) { swapA = i - 1; swapB = i; }
-                else if (cmd == LimbCmd.MoveDown) { swapA = i;     swapB = i + 1; }
+                else if (cmd == LimbCmd.MoveDown) { swapA = i; swapB = i + 1; }
             }
 
             if (removeAt >= 0)
@@ -245,7 +249,7 @@ namespace SackranyPawn.Editor
             else if (swapA >= 0 && swapB < _limbsProp.arraySize)
             {
                 _limbsProp.MoveArrayElement(swapA, swapB);
-                SwapDict(_foldouts, swapA, swapB);
+                SwapFoldouts(_foldKey, swapA, swapB);
                 SwapDict(_debugModes, swapA, swapB);
                 serializedObject.ApplyModifiedProperties();
             }
@@ -314,10 +318,34 @@ namespace SackranyPawn.Editor
             BadgeRight(ref rowRect, la.MissingOptional, ColYellow, "◐");
             BadgeRight(ref rowRect, la.Satisfied, ColGreen, "✓");
 
-            _foldouts.TryGetValue(idx, out bool open);
-            var foldRect = new Rect(rowRect.x + 4, rowRect.y + 1, rowRect.width - 4, rowRect.height - 2);
+            // enabled checkbox
+            var enabledProp = elemProp.FindPropertyRelative("_isEnabled");
+            bool isEnabled = enabledProp?.boolValue ?? true;
+            var checkRect = new Rect(rowRect.x + 3, rowRect.y + (rowRect.height - 14) * 0.5f, 14, 14);
+            var foldRect = new Rect(rowRect.x + 20, rowRect.y + 1, rowRect.width - 20, rowRect.height - 2);
+            foldRect = new Rect(foldRect.x + 20, foldRect.y, foldRect.width - 20, foldRect.height);
+
+            if (enabledProp != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                bool newEnabled = EditorGUI.Toggle(checkRect, isEnabled);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    enabledProp.boolValue = newEnabled;
+                    if (Application.isPlaying && elemProp.managedReferenceValue is Limb limb)
+                    {
+                        if (newEnabled) limb.Enable();
+                        else limb.Disable();
+                    }
+                }
+            }
+
+            bool open = GetFoldout(idx);
+            var prevColor = GUI.color;
+            if (!isEnabled) GUI.color = new Color(1f, 1f, 1f, 0.45f);
             bool newOpen = EditorGUI.Foldout(foldRect, open, label, true, HeaderStyle());
-            if (newOpen != open) _foldouts[idx] = newOpen;
+            GUI.color = prevColor;
+            if (newOpen != open) SetFoldout(idx, newOpen);
 
             if (!newOpen) return cmd;
 
@@ -394,6 +422,7 @@ namespace SackranyPawn.Editor
             {
                 enter = false;
                 if (SerializedProperty.EqualContents(iter, end)) break;
+                if (iter.name == "_isEnabled") continue;
                 EditorGUILayout.PropertyField(iter, true);
             }
         }
@@ -440,7 +469,7 @@ namespace SackranyPawn.Editor
                     _limbsProp.InsertArrayElementAtIndex(idx);
                     _limbsProp.GetArrayElementAtIndex(idx).managedReferenceValue =
                         Activator.CreateInstance(captured);
-                    _foldouts[idx] = true;
+                    SetFoldout(idx, true);
                     serializedObject.ApplyModifiedProperties();
                 });
             }
@@ -509,6 +538,14 @@ namespace SackranyPawn.Editor
             var r = SlotRight(ref row, 28f);
             var s = new GUIStyle(EditorStyles.miniLabel) { normal = { textColor = color } };
             EditorGUI.LabelField(r, $"{icon}{count}", s);
+        }
+
+        static void SwapFoldouts(string key, int a, int b)
+        {
+            bool va = EditorPrefs.GetBool($"{key}_{a}", false);
+            bool vb = EditorPrefs.GetBool($"{key}_{b}", false);
+            EditorPrefs.SetBool($"{key}_{a}", vb);
+            EditorPrefs.SetBool($"{key}_{b}", va);
         }
 
         static void SwapDict<T>(Dictionary<int, T> d, int a, int b)

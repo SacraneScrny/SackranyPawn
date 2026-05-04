@@ -368,19 +368,28 @@ namespace SackranyPawn.Entities.Modules
         {
             if (!IsStarted || IsDisposed) return;
             for (int i = 0; i < _updateModules.Count; i++)
+            {
+                if (!_updateModules[i].IsEnabled) continue;
                 _updateModules[i].OnUpdate(deltaTime);
+            }
         }
         public void FixedUpdate(float deltaTime)
         {
             if (!IsStarted || IsDisposed) return;
             for (int i = 0; i < _fixedUpdateModules.Count; i++)
+            {
+                if (!_fixedUpdateModules[i].IsEnabled) continue;
                 _fixedUpdateModules[i].OnFixedUpdate(deltaTime);
+            }
         }
         public void LateUpdate(float deltaTime)
         {
             if (!IsStarted || IsDisposed) return;
             for (int i = 0; i < _lateUpdateModules.Count; i++)
+            {
+                if (!_lateUpdateModules[i].IsEnabled) continue;
                 _lateUpdateModules[i].OnLateUpdate(deltaTime);
+            }
         }
         #endregion
 

@@ -2,6 +2,7 @@
 {
     public interface IFixedUpdateLimb
     {
-        public void OnFixedUpdate(float deltaTime);
+        bool IsEnabled { get; }
+        void OnFixedUpdate(float deltaTime);
     }
 }

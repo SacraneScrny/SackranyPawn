@@ -66,6 +66,8 @@ namespace SackranyPawn.Cache
                 var comp = unit.GetComponent(type);
                 if (comp == null)
                     comp = unit.GetComponentInChildren(type, true);
+                if (comp == null)
+                    comp = unit.GetComponentInParent(type, true);
                 if (comp != null)
                 {
                     result = comp;
