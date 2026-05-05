@@ -6,6 +6,7 @@ using ModifiableVariable;
 using SackranyPawn.Cache;
 using SackranyPawn.Entities;
 using SackranyPawn.Entities.Modules;
+using SackranyPawn.Entities.Modules.ModuleComposition;
 using SackranyPawn.Managers;
 using SackranyPawn.Plugin.Cache;
 using SackranyPawn.Plugin.Default;
@@ -146,6 +147,26 @@ namespace SackranyPawn.Components
         {
             IsDeserialized = true;
         }
+
+        public Dictionary<Type, object[]> Serialize()
+        {
+            var data = new Dictionary<Type, object[]>();
+            foreach (var limb in GetLimbs())
+            {
+                if (limb is ISerializableLimb serializableLimb)
+                    data.Add(limb.GetType(), serializableLimb.Serialize());
+            }
+            return data;
+        }
+        public void Deserialize(Dictionary<Type, object[]> data)
+        {
+            foreach (var slimb in data)
+            {
+                if (TryGet(slimb.Key, out Limb limb))
+                    if (limb is ISerializableLimb serializableLimb)
+                        serializableLimb.Deserialize(slimb.Value);
+            }
+        }
         #endregion
         
         public void StartWork()
@@ -211,6 +232,7 @@ namespace SackranyPawn.Components
             
             StopWork();
             gameObject.SetActive(false);
+            gameObject.transform.SetParent(null);
         }
         
         public void SetWorkByDefault(bool value) => WorkByDefault = value;
