@@ -92,7 +92,7 @@ namespace SackranyPawn.Cache
             if (double.IsNaN(v) || double.IsInfinity(v))
                 throw new Exception("Invalid double value for hashing");
             if (v == 0.0) v = 0.0;
-            long quantized = (long)Math.Round(v / Math.Pow(10, precision));
+            long quantized = (long)Math.Round(v * Math.Pow(10, precision));
             return AddLong(hash, unchecked((ulong)quantized));
         }
         static uint AddFloat2(uint hash, float x, float y, int p)
@@ -154,7 +154,7 @@ namespace SackranyPawn.Cache
 
             if (v == 0f) v = 0f;
 
-            return unchecked((uint)Mathf.RoundToInt(v / Mathf.Pow(10, precision)));
+            return unchecked((uint)Mathf.RoundToInt(v * Mathf.Pow(10, precision)));
         }
     }
 }

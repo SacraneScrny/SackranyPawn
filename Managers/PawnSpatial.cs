@@ -41,8 +41,7 @@ namespace SackranyPawn.Managers
         static bool _isUpdating;
         static readonly List<(Pawn pawn, bool add)> _pendingChanges = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Init()
+        internal static void Init()
         {
             _cells.Clear();
             _pawnList.Clear();
@@ -88,6 +87,9 @@ namespace SackranyPawn.Managers
             SpatialAxes axes = SpatialAxes.XZ,
             float movementThreshold = 0f)
         {
+            if (cellSize <= 0)
+                throw new ArgumentOutOfRangeException(nameof(cellSize), "Cell size must be greater than zero.");
+            
             bool needsRebuild = !Mathf.Approximately(cellSize, CellSize) || axes != Axes;
 
             CellSize = cellSize;

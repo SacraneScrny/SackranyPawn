@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SackranyPawn.Components;
 using SackranyPawn.Entities;
@@ -12,13 +13,14 @@ namespace SackranyPawn.Managers
         public static int GetCount(PawnArchetype archetype) =>
             _pawnPool.TryGetValue(archetype, out var pawns) ? pawns.Count : 0;
         
+        static readonly HashSet<int> _inPool = new();
         static readonly Dictionary<PawnArchetype, Stack<Pawn>> _pawnPool = new ();
         static Dictionary<PawnArchetype, Pawn> _templates = new();
         static Dictionary<int, Pawn> _goToPawn = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Init()
+        internal static void Init()
         {
+            _inPool.Clear();
             _pawnPool.Clear();
             _templates.Clear();
             _goToPawn.Clear();
@@ -68,6 +70,7 @@ namespace SackranyPawn.Managers
         static Pawn PopInternal(PawnArchetype archetype, Stack<Pawn> pawns)
         {
             var p = pawns.Count == 0 ? CreatePawn(archetype) : pawns.Pop();
+            _inPool.Remove(p.Hash);
             p?.OnPopped();
             return p;
         }
@@ -77,6 +80,7 @@ namespace SackranyPawn.Managers
         public static void Push(Pawn pawn)
         {
             if (pawn == null) return;
+            if (!_inPool.Add(pawn.Hash)) return;
             if (!_pawnPool.TryGetValue(pawn.Archetype, out var pawns))
             {
                 pawns = new Stack<Pawn>();
@@ -113,14 +117,20 @@ namespace SackranyPawn.Managers
             while (pawns.Count > 0)
             {
                 var p = pawns.Pop();
-                if (p != null) Object.Destroy(p.gameObject);
+                if (p != null)
+                {
+                    _inPool.Remove(p.Hash); 
+                    Object.Destroy(p.gameObject);
+                }
             }
             _templates.Remove(archetype);
             _pawnPool.Remove(archetype);
         }
         public static void ClearAll()
         {
-            foreach (var (archetype, _) in _pawnPool) Clear(archetype);
+            var list = _pawnPool.ToList();
+            foreach (var (archetype, _) in list) Clear(archetype);
+            _inPool.Clear();
             _pawnPool.Clear();
             _goToPawn.Clear();
         }

@@ -17,8 +17,8 @@ namespace SackranyPawn.Traits.Fluxes.Cache
         internal static int LookupId(Type type) => TypeRegistry<Flux>.GetOrRegister(type);
         
         static readonly Dictionary<Type, Flux> _templates = new();
-        [RuntimeInitializeOnLoadMethod]
-        static void ResetTemplates() => _templates.Clear();
+        
+        internal static void ResetTemplates() => _templates.Clear();
         
         internal static Flux GetTemplate<T>() where T : Flux, new()
         {

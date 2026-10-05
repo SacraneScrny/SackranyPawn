@@ -74,11 +74,16 @@ namespace SackranyPawn.Entities.Modules
         {
             if (limbs == null || limbs.Length == 0) return false;
             if (!IsDynamic && _limbMap.Count > 0) return false;
+            
+            var l = limbs.ToList();
+            l.RemoveAll(x => x == null);
+            limbs = l.ToArray();
+            if (limbs.Length == 0) return false;
 
             bool allAdded = true;
             Array.Sort(limbs, (a, b) =>
-                LimbReflectionCache.GetMetadata(a.GetType()).UpdateOrder
-                    .CompareTo(LimbReflectionCache.GetMetadata(b.GetType()).UpdateOrder));
+                LimbReflectionCache.GetMetadata(b.GetType()).UpdateOrder
+                    .CompareTo(LimbReflectionCache.GetMetadata(a.GetType()).UpdateOrder));
 
             var tempLimbs = new List<(Limb limb, int id)>(limbs.Length);
             for (int i = 0; i < limbs.Length; i++)
@@ -367,7 +372,7 @@ namespace SackranyPawn.Entities.Modules
         public void Update(float deltaTime)
         {
             if (!IsStarted || IsDisposed) return;
-            for (int i = 0; i < _updateModules.Count; i++)
+            for (int i = _updateModules.Count - 1; i >= 0; i--)
             {
                 if (!_updateModules[i].IsEnabled) continue;
                 _updateModules[i].OnUpdate(deltaTime);
@@ -376,7 +381,7 @@ namespace SackranyPawn.Entities.Modules
         public void FixedUpdate(float deltaTime)
         {
             if (!IsStarted || IsDisposed) return;
-            for (int i = 0; i < _fixedUpdateModules.Count; i++)
+            for (int i = _fixedUpdateModules.Count - 1; i >= 0; i--)
             {
                 if (!_fixedUpdateModules[i].IsEnabled) continue;
                 _fixedUpdateModules[i].OnFixedUpdate(deltaTime);
@@ -385,7 +390,7 @@ namespace SackranyPawn.Entities.Modules
         public void LateUpdate(float deltaTime)
         {
             if (!IsStarted || IsDisposed) return;
-            for (int i = 0; i < _lateUpdateModules.Count; i++)
+            for (int i = _lateUpdateModules.Count - 1; i >= 0; i--)
             {
                 if (!_lateUpdateModules[i].IsEnabled) continue;
                 _lateUpdateModules[i].OnLateUpdate(deltaTime);
@@ -435,6 +440,10 @@ namespace SackranyPawn.Entities.Modules
             TriedToAddAlreadyExist = null;
             LimbsReseted = null;
             IsDisposed = true;
+            
+            _updateModules.Clear();
+            _fixedUpdateModules.Clear();
+            _lateUpdateModules.Clear();
         }
 
         public event Action<Limb> LimbAdded;

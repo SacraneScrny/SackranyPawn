@@ -229,7 +229,18 @@ namespace SackranyPawn.Traits.Fluxes.Entities
         public object Clone()
         {
             var clone = (Flux)MemberwiseClone();
-            OnClone(clone);
+            clone.StateChanged = null;
+            clone._disposables = null;
+            clone._localCts = null;
+            clone.Token = CancellationToken.None;
+            clone._amount = null;
+            clone._progress = null;
+            clone.Amount = null;
+            clone.Progress = null;
+            clone.Handler = null;
+            clone.IsDisposed = false;
+            clone.IsStarted = false;
+            clone.OnClone(clone);
             return clone;
         }
         protected virtual void OnClone(Flux clone) { }

@@ -77,7 +77,8 @@ namespace SackranyPawn.Cache
                     }
                 }
 
-                if (current.GetCustomAttribute<UpdateOrderAttribute>() is { } orderAttr)
+                if (current.GetCustomAttribute<UpdateOrderAttribute>() is { } orderAttr
+                    && order == 0)
                     order = orderAttr._order;
 
                 current = current.BaseType;

@@ -33,9 +33,12 @@ namespace SackranyPawn.Managers
 
         public static IReadOnlyList<Pawn> RegisteredPawns => _cachedArray;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Init()
+        internal static void Init()
         {
+            OnPawnRegistered = null;
+            OnPawnUnregistered = null;
+            OnPawnStarted = null;
+            
             _cachedTeams.Clear();
             _cachedPawns.Clear();
             _cachedArchetypes.Clear();
@@ -102,7 +105,11 @@ namespace SackranyPawn.Managers
         static void RemoveFromTagIndex(Pawn unit, int tagId)
         {
             if (_cachedTags.TryGetValue(tagId, out var bucket))
+            {
                 bucket.Remove(unit.Hash);
+                if (bucket.Count == 0)
+                    _cachedTags.Remove(tagId);
+            }
         }
 
         static void OnPawnTagAdded(Pawn unit, int tagId) => AddToTagIndex(unit, tagId);
@@ -144,7 +151,10 @@ namespace SackranyPawn.Managers
         static bool UnregisterTeam(Pawn unit)
         {
             if (!_cachedTeams.TryGetValue(unit.Team, out var team)) return false;
-            return team.Remove(unit.Hash);
+            var status = team.Remove(unit.Hash);
+            if (team.Count == 0)
+                _cachedTeams.Remove(unit.Team);
+            return status;
         }
         static void UnregisterTags(Pawn unit)
         {
@@ -189,7 +199,7 @@ namespace SackranyPawn.Managers
         {
             for (int i = 0; i < _cachedArray.Count; i++)
             {
-                if (!cond(_cachedArray[i])) continue;
+                if (!_cachedArray[i].IsActive || !cond(_cachedArray[i])) continue;
                 value = _cachedArray[i];
                 return true;
             }
@@ -205,7 +215,7 @@ namespace SackranyPawn.Managers
             }
             foreach (var kvp in teams)
             {
-                if (!cond(kvp.Value)) continue;
+                if (!kvp.Value.IsActive || !cond(kvp.Value)) continue;
                 value = kvp.Value;
                 return true;
             }
@@ -221,6 +231,7 @@ namespace SackranyPawn.Managers
             }
             foreach (var kvp in teams)
             {
+                if (!kvp.Value.IsActive) continue;
                 value = kvp.Value;
                 return value != null;
             }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using SackranyPawn.Components;
 using SackranyPawn.Plugin.Cache;
@@ -22,8 +23,7 @@ namespace SackranyPawn.Managers
         static readonly List<Pawn> _localPawns = new();
         static readonly Dictionary<int, int> _localIndex = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Init()
+        internal static void Init()
         {
             _isUpdating = false;
             _pendingChanges.Clear();
@@ -121,11 +121,17 @@ namespace SackranyPawn.Managers
             _isUpdating = true;
             for (int i = 0; i < _localPawns.Count; i++)
             {
-                if (hasAnyPlugins)
-                    for (int p = 0; p < plugins.Length; p++)
-                        plugins[p].Execute(_localPawns[i], dt);
-                
-                _localPawns[i].OnUpdate(dt);
+                try 
+                {
+                    if (hasAnyPlugins)
+                        for (int p = 0; p < plugins.Length; p++)
+                            plugins[p].Execute(_localPawns[i], dt);
+                    _localPawns[i].OnUpdate(dt);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
             _isUpdating = false;
             FlushPending();
@@ -139,12 +145,20 @@ namespace SackranyPawn.Managers
             _isUpdating = true;
             for (int i = 0; i < _localPawns.Count; i++)
             {
-                if (hasAnyPlugins)
-                    for (int p = 0; p < plugins.Length; p++)
-                        plugins[p].Execute(_localPawns[i], dt);
-                
-                _localPawns[i].OnFixedUpdate(dt);
+                try
+                {
+                    if (hasAnyPlugins)
+                        for (int p = 0; p < plugins.Length; p++)
+                            plugins[p].Execute(_localPawns[i], dt);
+
+                    _localPawns[i].OnFixedUpdate(dt);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
+
             _isUpdating = false;
             FlushPending();
         }
@@ -157,11 +171,18 @@ namespace SackranyPawn.Managers
             _isUpdating = true;
             for (int i = 0; i < _localPawns.Count; i++)
             {
-                if (hasAnyPlugins)
-                    for (int p = 0; p < plugins.Length; p++)
-                        plugins[p].Execute(_localPawns[i], dt);
-                
-                _localPawns[i].OnLateUpdate(dt);
+                try 
+                {
+                    if (hasAnyPlugins)
+                        for (int p = 0; p < plugins.Length; p++)
+                            plugins[p].Execute(_localPawns[i], dt);
+
+                    _localPawns[i].OnLateUpdate(dt);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
             }
             _isUpdating = false;
             FlushPending();

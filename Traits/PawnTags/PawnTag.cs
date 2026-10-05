@@ -56,10 +56,10 @@ namespace SackranyPawn.Traits.PawnTags
             return true;
         }
 
-        public IEnumerable<int> GetIds() => _tags;
+        public IEnumerable<int> GetIds() => _tags.ToArray();
         public override void Reset()
         {
-            foreach (var tag in _tags)
+            foreach (var tag in _tags.ToArray())
                 OnTagRemoved?.Invoke(tag);
             _tags.Clear();
             foreach (var tag in _defaultTags)

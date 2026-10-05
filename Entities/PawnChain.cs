@@ -91,7 +91,7 @@ namespace SackranyPawn.Entities
         {
             if (_pawn == null) return default;
             var pawn = _pawn;
-            await UniTask.WaitWhile(() => !pawn.IsActive, cancellationToken: token);
+            await UniTask.WaitWhile(() => pawn != null && !pawn.IsActive, cancellationToken: token);
             return new PawnChain(_pawn);
         }
 

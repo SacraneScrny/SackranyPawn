@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using SackranyPawn.Traits.PawnEvents.Interfaces;
 
+using UnityEngine;
+
 namespace SackranyPawn.Traits.PawnEvents
 {
     public class PawnEventBus : IBusListener, IBusPublisher
@@ -62,29 +64,47 @@ namespace SackranyPawn.Traits.PawnEvents
         
         public bool Publish(int id)
         {
-            if (!_events.TryGetValue((id, NoDataType), out var d)) return false;
+            if (!_events.TryGetValue((id, NoDataType), out var d) || d == null)
+                return false;
 
-            ((Action)d)();
-            return true;
+            bool invoked = false;
+            bool allOk = true;
+            
+            var list = d.GetInvocationList();
+            foreach (var single in list)
+            {
+                try { ((Action)single)(); invoked = true; }
+                catch (Exception e) { Debug.LogException(e); allOk = false; }
+            }
+            return invoked && allOk;
         }
         public bool Publish<T>(int id, T data, bool includeNoDataChannel = false)
         {
             bool invoked = false;
+            bool allOk = true;
 
-            if (_events.TryGetValue((id, typeof(T)), out var d))
+            if (_events.TryGetValue((id, typeof(T)), out var d) && d != null)
             {
-                ((Action<T>)d)(data);
-                invoked = true;
+                var list = d.GetInvocationList();
+                foreach (var single in list)
+                {
+                    try { ((Action<T>)single)(data); invoked = true; }
+                    catch (Exception e) { Debug.LogException(e); allOk = false; }
+                }
             }
-
+            
             if (includeNoDataChannel &&
-                _events.TryGetValue((id, NoDataType), out var dl))
+                _events.TryGetValue((id, NoDataType), out var dl) && dl != null)
             {
-                ((Action)dl)();
-                invoked = true;
+                var list2 = dl.GetInvocationList();
+                foreach (var single in list2)
+                {
+                    try { ((Action)single)(); invoked = true; }
+                    catch (Exception e) { Debug.LogException(e); allOk = false; }
+                }
             }
 
-            return invoked;
+            return invoked && allOk;
         }
 
         public void Reset()

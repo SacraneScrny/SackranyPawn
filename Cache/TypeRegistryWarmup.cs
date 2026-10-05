@@ -16,8 +16,7 @@ namespace SackranyPawn.Cache
 {
     internal static class TypeRegistryWarmup
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Warmup()
+        internal static void Warmup()
         {
             TypeRegistry<Limb>.Reset();
             TypeRegistry<IStat>.Reset();

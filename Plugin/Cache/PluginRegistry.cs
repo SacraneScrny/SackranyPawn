@@ -26,8 +26,7 @@ namespace SackranyPawn.Plugin.Cache
             public Type? After;
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Init()
+        internal static void Init()
         {
             _map.Clear();
 

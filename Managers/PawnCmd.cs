@@ -16,8 +16,7 @@ namespace SackranyPawn.Managers
         static CancellationTokenSource _destroyToken;
         static bool _isRunning;
         
-        [RuntimeInitializeOnLoadMethod]
-        static void Init()
+        internal static void Init()
         {
             _isRunning = false;
             _commandHandlers.Clear();
@@ -73,33 +72,43 @@ namespace SackranyPawn.Managers
 
                     for (int i = _commandHandlers.Count - 1; i >= 0; i--)
                     {
-                        var cmd = _commandHandlers[i];
-                        if (cmd.IsTimeOut(Time.deltaTime))
+                        try
                         {
+                            var cmd = _commandHandlers[i];
+                            if (cmd.IsTimeOut(Time.deltaTime))
+                            {
+                                foreach (var callback in cmd.callbacks)
+                                    callback?.Invoke();
+                                cmd.callbacks.Clear();
+                                cmd.completed = true;
+                                _commandHandlers.RemoveAt(i);
+                                continue;
+                            }
+
+                            if (!PawnRegister.TryGetPawn(cmd.cond, out var unit))
+                                continue;
+
+                            if (!unit.IsActive)
+                                continue;
+
+                            cmd.action(unit);
+
+                            foreach (var callback in cmd.callbacks)
+                                callback?.Invoke();
+
                             cmd.callbacks.Clear();
                             cmd.completed = true;
+
                             _commandHandlers.RemoveAt(i);
-                            continue;
                         }
-
-                        if (!PawnRegister.TryGetPawn(cmd.cond, out var unit))
-                            continue;
-
-                        if (!unit.IsActive)
-                            continue;
-
-                        cmd.action(unit);
-
-                        foreach (var callback in cmd.callbacks)
-                            callback?.Invoke();
-
-                        cmd.callbacks.Clear();
-                        cmd.completed = true;
-
-                        _commandHandlers.RemoveAt(i);
+                        catch (Exception e)
+                        {
+                            Debug.LogException(e);
+                            _commandHandlers.RemoveAt(i);
+                        }
                     }
                 }
-            }
+            }            
             catch (OperationCanceledException) { }
 
             _isRunning = false;
@@ -107,6 +116,11 @@ namespace SackranyPawn.Managers
 
         public static CommandHandle Execute(Func<Pawn, bool> cond, Action<Pawn> action, float timeoutSeconds = 15)
         {
+            if (cond == null || action == null)
+                throw new ArgumentNullException("cond and action cannot be null");
+            if (timeoutSeconds <= 0 ||  float.IsNaN(timeoutSeconds))
+                throw new ArgumentOutOfRangeException(nameof(timeoutSeconds));
+            
             var cmd = new PawnCommand
             {
                 cond = cond,

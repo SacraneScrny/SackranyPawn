@@ -191,6 +191,7 @@ namespace SackranyPawn.Traits.Fluxes.Entities
 
         public FluxObserver Where(Func<FluxHandle, bool> predicate)
         {
+            if (AlreadyDisposed()) return this;
             _where = predicate;
             return this;
         }

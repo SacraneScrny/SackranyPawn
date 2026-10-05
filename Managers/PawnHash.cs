@@ -11,8 +11,7 @@ namespace SackranyPawn.Managers
             return _nextId;
         }
         
-        [RuntimeInitializeOnLoadMethod]
-        static void Init()
+        internal static void Init()
         {
             _nextId = int.MinValue;
         }

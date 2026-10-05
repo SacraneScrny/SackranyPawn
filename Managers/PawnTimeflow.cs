@@ -14,8 +14,7 @@ namespace SackranyPawn.Managers
         static float _lastCurrentTimeFlow = 0f;
         public static float CurrentTimeFlow => _lastCurrentTimeFlow;
         
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Init()
+        internal static void Init()
         {
             TimeFlow.Clear();
             _lastCurrentTimeFlow = TimeFlow;            

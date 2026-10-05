@@ -15,7 +15,8 @@ namespace SackranyPawn.Traits.Fluxes
     [Serializable]
     public class FluxHandler : AsyncLimb, IUpdateLimb, IFixedUpdateLimb
     {
-        [SerializeField][SerializeReference][SubclassSelector] List<Flux> Fluxes;
+        [SerializeField] [SerializeReference] [SubclassSelector] List<Flux> DefaultFluxes;
+        List<Flux> Fluxes = new ();
 
         readonly Dictionary<Flux, int> _fluxIndex = new();
         readonly Dictionary<int, HashSet<FluxHandle>> _fluxesByIds = new();
@@ -25,9 +26,10 @@ namespace SackranyPawn.Traits.Fluxes
 
         protected override void OnStart()
         {
-            for (var f = 0; f < Fluxes.Count; f++)
+            for (var f = 0; f < DefaultFluxes.Count; f++)
             {
-                var flux = Fluxes[f];
+                var flux = DefaultFluxes[f].Clone() as Flux;
+                Fluxes.Add(flux);
                 CacheInternal(flux, f);
                 flux.Initialize(this, 1);
                 flux.Start();
@@ -70,10 +72,10 @@ namespace SackranyPawn.Traits.Fluxes
             if (amount <= 0) return default;
             var instance = (Flux)flux.Clone();
 
+            Fluxes.Add(instance);
             CacheInternal(instance);
             instance.Initialize(this, amount);
             instance.Start();
-            Fluxes.Add(instance);
             FluxAdded?.Invoke(instance);
 
             var plugins = PluginRegistry.Get<FluxHandlerPlugins.IFluxHandlerFluxApplied>.Value;
@@ -125,7 +127,7 @@ namespace SackranyPawn.Traits.Fluxes
                 _fluxesByIds.Add(flux.Id, fluxes);
             }
             fluxes.Add(flux);
-            _fluxIndex[flux] = index >= 0 ? index : Fluxes.Count;
+            _fluxIndex[flux] = index >= 0 ? index : (Fluxes.Count - 1);
         }
         void RemoveFromCacheInternal(Flux flux)
         {
@@ -138,9 +140,8 @@ namespace SackranyPawn.Traits.Fluxes
         bool RemoveInternal(Flux flux)
         {
             if (flux == null) return false;
-            RemoveFromCacheInternal(flux);
-
             if (!_fluxIndex.TryGetValue(flux, out int idx)) return false;
+            RemoveFromCacheInternal(flux);
 
             int last = Fluxes.Count - 1;
             if (idx != last)

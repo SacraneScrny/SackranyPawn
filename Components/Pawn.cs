@@ -46,6 +46,10 @@ namespace SackranyPawn.Components
         
         void OnValidate()
         {
+            RefreshArchetype();
+        }
+        public void RefreshArchetype()
+        {
             _archetype = new PawnArchetype(this);
         }
         
@@ -76,7 +80,7 @@ namespace SackranyPawn.Components
             
             Event ??= new ();
             
-            _archetype = new (this);
+            RefreshArchetype();
             TimeFlow = new (1);
             Team = new (Tag, true);
 
@@ -173,6 +177,7 @@ namespace SackranyPawn.Components
         {
             if (IsWorking) return;
             IsWorking = true;
+            Body.Start();
             PawnRegister.RegisterPawn(this);
             OnStartWorking?.Invoke(this);
             
@@ -273,8 +278,9 @@ namespace SackranyPawn.Components
 
         public static bool operator ==(Pawn left, Pawn right)
         {
-            if (ReferenceEquals(left, right)) return true;
-            if (ReferenceEquals(left, null)) return false;
+            bool l = (UnityEngine.Object)left == null;
+            bool r = (UnityEngine.Object)right == null;
+            if (l || r) return l && r;
             return left.Equals(right);
         }
         public static bool operator !=(Pawn left, Pawn right)

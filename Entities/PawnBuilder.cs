@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using SackranyPawn.Components;
 using SackranyPawn.Entities.Modules;
@@ -232,6 +233,11 @@ namespace SackranyPawn.Entities
             ApplyTransform(pawn);
             ApplyTags(pawn);
             ApplyLimbs(pawn);
+            if (_source != SourceKind.Pool)
+            {
+                pawn.UpdateTeam();
+                pawn.RefreshArchetype();
+            }
             ApplyLifecycle(pawn);
 
             return pawn;
@@ -258,7 +264,7 @@ namespace SackranyPawn.Entities
         Pawn CreateFromPool()
         {
             var pawn = PawnPool.Pop(_prefab);
-            pawn.StopWork();
+            pawn?.StopWork();
             return pawn;
         }
 
@@ -289,7 +295,10 @@ namespace SackranyPawn.Entities
 
             var body = pawn.GetBody();
             body.Start();
-            body.Add(_limbs.ToArray(), false);
+            var status = body.Add(_limbs.ToArray(), _source == SourceKind.Pool);
+            if (!status) 
+                Debug.LogWarning($"PawnBuilder: Failed to add limbs to Pawn '{pawn.name}'.\n Limbs: " 
+                                 + _limbs.Aggregate("", (acc, l) => acc + l.GetType().Name + ", "));
         }
 
         void ApplyLifecycle(Pawn pawn)
