@@ -20,7 +20,7 @@ namespace SackranyPawn.Traits.Conditions
         public ACondition[] Default;
 
         readonly Dictionary<int, int> _blocks = new();
-        readonly Dictionary<int, GateModifiable<bool>> _gates = new();
+        readonly Dictionary<int, GateModifiable> _gates = new();
 
         protected override void OnStart()
         {
@@ -119,22 +119,22 @@ namespace SackranyPawn.Traits.Conditions
             return count;
         }
         
-        public GateModifiable<bool> GetGate<T>() where T : ICondition
+        public GateModifiable GetGate<T>() where T : ICondition
         {
             int id = ConditionRegistry.GetId<T>();
             if (!_gates.TryGetValue(id, out var b))
             {
-                b = new GateModifiable<bool>(true);
+                b = new GateModifiable(true);
                 _gates[id] = b;
             }
             return b;
         }        
-        public GateModifiable<bool> GetGate(ICondition condition)
+        public GateModifiable GetGate(ICondition condition)
         {            
             int id = condition.Id;
             if (!_gates.TryGetValue(id, out var b))
             {
-                b = new GateModifiable<bool>(true);
+                b = new GateModifiable(true);
                 _gates[id] = b;
             }
             return b;
@@ -144,7 +144,7 @@ namespace SackranyPawn.Traits.Conditions
             int id = ConditionRegistry.GetId<T>();
             if (!_gates.TryGetValue(id, out var b))
             {
-                b = new GateModifiable<bool>(true);
+                b = new GateModifiable(true);
                 _gates[id] = b;
             }
             bool before = IsAllowedInternal(id);
@@ -157,7 +157,7 @@ namespace SackranyPawn.Traits.Conditions
             int id = condition.Id;
             if (!_gates.TryGetValue(id, out var b))
             {
-                b = new GateModifiable<bool>(true);
+                b = new GateModifiable(true);
                 _gates[id] = b;
             }
             bool before = IsAllowedInternal(id);

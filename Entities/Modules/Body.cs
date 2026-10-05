@@ -115,13 +115,13 @@ namespace SackranyPawn.Entities.Modules
                 }
             }
 
-            for (int i = 0; i < tempLimbs.Count; i++)
+            for (int i = tempLimbs.Count - 1; i >= 0; i--)
             {
                 if (asTemp)
                     tempLimbs[i].limb.MarkTemporary();
                 tempLimbs[i].limb.Awake();
             }
-            for (int i = 0; i < tempLimbs.Count; i++)
+            for (int i = tempLimbs.Count - 1; i >= 0; i--)
                 ActivateModule(tempLimbs[i].limb);
 
             return allAdded;
