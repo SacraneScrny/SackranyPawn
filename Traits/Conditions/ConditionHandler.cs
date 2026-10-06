@@ -16,31 +16,26 @@ namespace SackranyPawn.Traits.Conditions
     [UpdateOrder(Order.BeforeAll)]
     public class ConditionHandler : Limb
     {
-        [SerializeField][SerializeReference][SubclassSelector]
-        public ACondition[] Default;
-
         readonly Dictionary<int, int> _blocks = new();
         readonly Dictionary<int, GateModifiable> _gates = new();
 
         protected override void OnStart()
         {
-            foreach (var condition in Default)
-                BlockInternal(condition.Id, 1);
+            
         }
         protected override void OnReset()
         {
             _blocks.Clear();
             OnBlocked = null;
             OnUnblocked = null;
-            foreach (var condition in Default)
-                BlockInternal(condition.Id, 1);
-            foreach (var b in _gates.Values) b.Clear();
+            
+            foreach (var b in _gates.Values) b.Dispose(); 
             _gates.Clear();
         }
         protected override void OnDispose()
         {
             _blocks.Clear();
-            foreach (var b in _gates.Values) b.Clear();
+            foreach (var b in _gates.Values) b?.Dispose();
             _gates.Clear();
         }
         

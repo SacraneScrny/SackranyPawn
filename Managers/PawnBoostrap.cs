@@ -1,7 +1,5 @@
 ﻿using SackranyPawn.Cache;
 using SackranyPawn.Plugin.Cache;
-using SackranyPawn.Traits.Fluxes.Cache;
-
 using UnityEngine;
 
 namespace SackranyPawn.Managers
@@ -11,6 +9,7 @@ namespace SackranyPawn.Managers
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Boot()
         {
+            TeamId.Clear();
             TypeRegistryWarmup.Warmup();
             PluginRegistry.Init();
             PawnHash.Init();
@@ -21,7 +20,6 @@ namespace SackranyPawn.Managers
             PawnTimeflow.Init();
             PawnSpatial.Init();
 
-            FluxRegistry.ResetTemplates();
             PawnCmd.Init();
         }
     }

@@ -166,7 +166,16 @@ namespace SackranyPawn.Managers
         {
             _isUpdating = true;
             for (int i = 0; i < _pawnList.Count; i++)
-                UpdatePositionInternal(_pawnList[i]);
+            {
+                try
+                {
+                    UpdatePositionInternal(_pawnList[i]);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            }
             _isUpdating = false;
             FlushPending();
         }

@@ -98,12 +98,13 @@ namespace SackranyPawn.Managers
 
                             cmd.callbacks.Clear();
                             cmd.completed = true;
-
-                            _commandHandlers.RemoveAt(i);
                         }
                         catch (Exception e)
                         {
                             Debug.LogException(e);
+                        }
+                        finally
+                        {
                             _commandHandlers.RemoveAt(i);
                         }
                     }

@@ -69,10 +69,19 @@ namespace SackranyPawn.Managers
         
         static Pawn PopInternal(PawnArchetype archetype, Stack<Pawn> pawns)
         {
-            var p = pawns.Count == 0 ? CreatePawn(archetype) : pawns.Pop();
-            _inPool.Remove(p.Hash);
-            p?.OnPopped();
-            return p;
+            while (pawns.Count > 0)
+            {
+                var p = pawns.Pop();
+                if (p == null) continue;
+                _inPool.Remove(p.Hash);
+                p.OnPopped();
+                return p;
+            }
+            var fresh = CreatePawn(archetype);
+            if (fresh == null) return null;
+            _inPool.Remove(fresh.Hash);
+            fresh.OnPopped();
+            return fresh;
         }
         #endregion
 
@@ -86,6 +95,8 @@ namespace SackranyPawn.Managers
                 pawns = new Stack<Pawn>();
                 _pawnPool.Add(pawn.Archetype, pawns);
             }
+            while (pawns.Count > 0 && pawns.Peek() == null)
+                pawns.Pop();
             pawns.Push(pawn);
             pawn.OnPushed();
         }
@@ -113,18 +124,23 @@ namespace SackranyPawn.Managers
         #region CLEAR
         public static void Clear(PawnArchetype archetype)
         {
-            if (!_pawnPool.TryGetValue(archetype, out var pawns)) return;
-            while (pawns.Count > 0)
+            if (_pawnPool.TryGetValue(archetype, out var pawns))
             {
-                var p = pawns.Pop();
-                if (p != null)
+                while (pawns.Count > 0)
                 {
-                    _inPool.Remove(p.Hash); 
-                    Object.Destroy(p.gameObject);
+                    var p = pawns.Pop();
+                    if (p != null)
+                    {
+                        _goToPawn.Remove(p.gameObject.GetInstanceID());
+                        _inPool.Remove(p.Hash);
+                        Object.Destroy(p.gameObject);
+                    }
                 }
+                _pawnPool.Remove(archetype);
             }
+            if (_templates.TryGetValue(archetype, out var template) && template != null)
+                _goToPawn.Remove(template.gameObject.GetInstanceID());
             _templates.Remove(archetype);
-            _pawnPool.Remove(archetype);
         }
         public static void ClearAll()
         {
@@ -139,7 +155,11 @@ namespace SackranyPawn.Managers
         #region HELPERS
         static void RegisterTemplate(Pawn pawn)
         {
-            if (!_templates.TryAdd(pawn.Archetype, pawn)) return;
+            if (!_templates.TryAdd(pawn.Archetype, pawn))
+            {
+                Debug.LogError($"PawnPool: Template for archetype {pawn.Archetype} is already registered. Ignoring duplicate.");
+                return;
+            }
             _goToPawn[pawn.gameObject.GetInstanceID()] = pawn;
         }
         static Pawn ResolvePawn(GameObject go)
@@ -150,6 +170,36 @@ namespace SackranyPawn.Managers
             var pawn = go.GetComponent<Pawn>();
             if (pawn != null) _goToPawn[id] = pawn;
             return pawn;
+        }
+        
+        internal static void NotifyDestroyed(Pawn pawn)
+        {
+            if (ReferenceEquals(pawn, null)) return;
+
+            _inPool.Remove(pawn.Hash);
+
+            try
+            {
+                var go = pawn.gameObject;
+                if (go != null)
+                    _goToPawn.Remove(go.GetInstanceID());
+            }
+            catch {  }
+
+            List<int> dead = null;
+            foreach (var kv in _goToPawn)
+            {
+                if (ReferenceEquals(kv.Value, pawn) || kv.Value == null)
+                    (dead ??= new List<int>()).Add(kv.Key);
+            }
+            if (dead != null)
+                foreach (var k in dead) _goToPawn.Remove(k);
+
+            foreach (var kv in _templates.ToList())
+            {
+                if (ReferenceEquals(kv.Value, pawn))
+                    _templates.Remove(kv.Key);
+            }
         }
         #endregion
     }

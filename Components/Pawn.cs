@@ -33,7 +33,8 @@ namespace SackranyPawn.Components
         
         public PawnArchetype Archetype => _archetype;
         [SerializeField] PawnArchetype _archetype;
-        
+
+        [SerializeField] string[] TeamKeywords;
         public TeamInfo Team { get; private set; }
         
         public Modifiable<float> TimeFlow { get; private set; }
@@ -55,6 +56,7 @@ namespace SackranyPawn.Components
         
         void Awake()
         {
+            Hash = PawnHash.GetId();
             var plugins = PluginRegistry.Get<PawnPlugins.IPawnAwaking>.Value;
             for (int i = 0; i < plugins.Length; i++)
                 plugins[i].Execute(this);
@@ -73,8 +75,6 @@ namespace SackranyPawn.Components
             
             Application.quitting += OnApplicationQuitting;
             
-            Hash = PawnHash.GetId();
-            
             Tag ??= new ();
             Tag.Initialize(this);
             
@@ -82,7 +82,7 @@ namespace SackranyPawn.Components
             
             RefreshArchetype();
             TimeFlow = new (1);
-            Team = new (Tag, true);
+            Team = new (TeamKeywords);
 
             Body ??= new ();
             Body.FillPawn(this);
@@ -246,10 +246,6 @@ namespace SackranyPawn.Components
             WorkByDefault = true;
             StartWork();
         }
-        public void UpdateTeam()
-        {
-            Team = new (Tag, true);
-        }
         
         public event Action<Pawn> OnStartWorking;
         public event Action<Pawn> OnStopWorking;
@@ -289,6 +285,7 @@ namespace SackranyPawn.Components
         
         void OnDestroy()
         {
+            PawnPool.NotifyDestroyed(this);
             if (_isQuitting) return;
             var plugins = PluginRegistry.Get<PawnPlugins.IPawnDestroying>.Value;
             for (int i = 0; i < plugins.Length; i++)

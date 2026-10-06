@@ -16,7 +16,7 @@ namespace SackranyPawn.Traits.Stats
     public class StatHandler : Limb
     {
         [SerializeField][SerializeReference][SubclassSelector]
-        public AStat[] Default;
+        [HashKey] public AStat[] Default;
 
         readonly Dictionary<int, Modifiable<float>> _stats = new();
 
@@ -31,8 +31,13 @@ namespace SackranyPawn.Traits.Stats
             foreach (var stat in Default)
                 RegisterInternal(stat.Id, stat.baseValue);
         }
-        protected override void OnDispose() => ClearAll();
-
+        protected override void OnDispose()
+        {
+            foreach (var v in _stats.Values) v?.Dispose();
+            _stats.Clear();
+            StatAdded = null;
+            StatRemoved = null;
+        }
         void ClearAll()
         {
             foreach (var v in _stats.Values) v.Clear();

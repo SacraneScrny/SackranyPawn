@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using SackranyPawn.Cache;
 using SackranyPawn.Traits.PawnTags;
 
 namespace SackranyPawn.Entities
@@ -11,38 +12,16 @@ namespace SackranyPawn.Entities
         public readonly bool None;
         public readonly int TeamId;
 
-        public TeamInfo(PawnTag tag, bool hasTeam = true)
+        public TeamInfo(string[] keywords, bool hasTeam = true)
         {
             None = !hasTeam;
             if (None) { TeamId = -1; return; }
-            int hash = 0;
-            foreach (var id in tag.GetIds())
-                hash += MixId(id);
-            TeamId = hash;
-        }
-        public TeamInfo(IEnumerable<IPawnTag> tags, bool hasTeam = true)
-        {
-            None = !hasTeam;
-            if (None) { TeamId = -1; return; }
-            int hash = 0;
-            foreach (var id in tags.Select(x => x.Id))
-                hash += MixId(id);
-            TeamId = hash;
+            TeamId = Cache.TeamId.Get(keywords);
         }
         public TeamInfo(int teamId, bool none)
         {
             TeamId = teamId;
             None = none;
-        }
-
-        static int MixId(int id)
-        {
-            uint x = (uint)id;
-            x = (x ^ 0xdeadbeef) + (x << 4);
-            x ^= x >> 10;
-            x += x << 7;
-            x ^= x >> 13;
-            return (int)x;
         }
 
         public bool Equals(TeamInfo other) => TeamId == other.TeamId;

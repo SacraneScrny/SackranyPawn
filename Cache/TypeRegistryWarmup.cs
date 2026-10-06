@@ -5,7 +5,6 @@ using System.Reflection;
 using SackranyPawn.Entities;
 using SackranyPawn.Entities.Modules;
 using SackranyPawn.Traits.Conditions;
-using SackranyPawn.Traits.Fluxes.Entities;
 using SackranyPawn.Traits.PawnEvents;
 using SackranyPawn.Traits.PawnTags;
 using SackranyPawn.Traits.Stats;
@@ -23,7 +22,6 @@ namespace SackranyPawn.Cache
             TypeRegistry<ICondition>.Reset();
             TypeRegistry<IEvent>.Reset();
             TypeRegistry<IPawnTag>.Reset();
-            TypeRegistry<Flux>.Reset();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -32,7 +30,6 @@ namespace SackranyPawn.Cache
             Register<ICondition>(assemblies);
             Register<IEvent>(assemblies);
             Register<IPawnTag>(assemblies);
-            Register<Flux>(assemblies);
         }
 
         static void Register<TBase>(Assembly[] assemblies) where TBase : class
